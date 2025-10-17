@@ -1,0 +1,25 @@
+# Symfony
+/var/
+/vendor/
+/.env.local
+/.env.local.php
+/.env.*.local
+/public/bundles/
+/config/secrets/prod/prod.decrypt.private.php
+
+# PHPUnit
+.phpunit.result.cache
+/coverage/
+
+# IDE
+/.idea
+/.vscode
+*.swp
+*.swo
+.DS_Store
+
+# Logs
+*.log
+
+# Environment
+.env
