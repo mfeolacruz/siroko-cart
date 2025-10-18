@@ -7,7 +7,7 @@ parameters:
         - src
     reportUnmatchedIgnoredErrors: false
     symfony:
-        containerXmlPath: var/cache/dev/App_KernelDevDebugContainer.xml
+        containerXmlPath: var/cache/dev/App_Shared_Infrastructure_Symfony_KernelDevDebugContainer.xml
     
     ignoreErrors:
         # Ignore Symfony-specific dynamic behavior
