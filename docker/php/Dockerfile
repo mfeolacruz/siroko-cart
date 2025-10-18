@@ -35,17 +35,14 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 # Set working directory
 WORKDIR /var/www/html
 
-# Copy composer files first for better caching
-COPY composer.json composer.lock* ./
-
-# Install dependencies if composer files exist
-RUN if [ -f composer.json ]; then composer install --no-scripts --no-autoloader; fi
-
 # Copy project files
 COPY . .
 
-# Generate autoload and run post-install scripts
-RUN if [ -f composer.json ]; then composer dump-autoload --optimize; fi
+# Install dependencies if composer files exist
+RUN if [ -f composer.json ]; then \
+        composer install --no-scripts --no-autoloader && \
+        composer dump-autoload --optimize; \
+    fi
 
 # Set permissions
 RUN chown -R www-data:www-data /var/www/html \
