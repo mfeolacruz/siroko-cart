@@ -1,0 +1,17 @@
+includes:
+    - vendor/phpstan/phpstan-symfony/extension.neon
+
+parameters:
+    level: 8
+    paths:
+        - src
+    reportUnmatchedIgnoredErrors: false
+    symfony:
+        containerXmlPath: var/cache/dev/App_Shared_Infrastructure_Symfony_KernelDevDebugContainer.xml
+    
+    ignoreErrors:
+        # Ignore Symfony-specific dynamic behavior
+        - '#Service ".+" is private#'
+        - '#Cannot call method [a-zA-Z0-9_]+\(\) on mixed#'
+        
+    tmpDir: var/cache/phpstan

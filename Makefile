@@ -1,5 +1,5 @@
 # Siroko Cart - Makefile
-.PHONY: help up down build restart logs test clean install quality phpstan benchmark cs-fix cs-check
+.PHONY: help setup up down build restart logs test clean install quality phpstan benchmark cs-fix cs-check cache-clear install-hooks
 
 # Default target
 help: ## Show this help message
@@ -7,6 +7,17 @@ help: ## Show this help message
 	@echo ''
 	@echo 'Targets:'
 	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z_-]+:.*?## / {printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2}' $(MAKEFILE_LIST)
+
+# Setup commands
+setup: ## Complete project setup (first time)
+	@echo "🚀 Setting up Siroko Cart project..."
+	cp .env.example .env
+	make build
+	make up
+	make install
+	make install-hooks
+	@echo ""
+	@echo "✅ Setup complete! Project available at http://localhost:$${NGINX_PORT:-8081}"
 
 # Docker commands
 up: ## Start all services
@@ -42,8 +53,9 @@ phpstan: ## Run PHPStan static analysis
 
 benchmark: ## Run Apache Benchmark performance tests
 	@echo "Running performance benchmark on main endpoints..."
-	ab -n 1000 -c 10 http://localhost:${NGINX_PORT:-8080}/api/health || echo "Health endpoint not ready"
-	ab -n 100 -c 5 http://localhost:${NGINX_PORT:-8080}/api/carts/test-cart || echo "Cart endpoint not ready"
+	@echo "Note: Make sure endpoints exist before running benchmarks"
+	ab -n 1000 -c 10 http://localhost:$${NGINX_PORT:-8081}/api/health || echo "Health endpoint not ready"
+	ab -n 100 -c 5 http://localhost:$${NGINX_PORT:-8081}/api/carts/test-cart || echo "Cart endpoint not ready"
 
 cs-check: ## Check code style with PHP CS Fixer
 	docker-compose exec app vendor/bin/php-cs-fixer fix --dry-run --diff
@@ -74,3 +86,11 @@ migrate: ## Run Doctrine migrations
 
 schema-validate: ## Validate Doctrine schema
 	docker-compose exec app php bin/console doctrine:schema:validate
+
+cache-clear: ## Clear and warmup Symfony cache
+	docker-compose exec app php bin/console cache:clear
+	docker-compose exec app php bin/console cache:warmup
+
+# Git hooks
+install-hooks: ## Install Git hooks for code quality
+	./.githooks/install-hooks.sh

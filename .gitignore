@@ -1,28 +1,20 @@
-# Symfony
-/var/
-/vendor/
+
+###> symfony/framework-bundle ###
 /.env.local
 /.env.local.php
 /.env.*.local
-/public/bundles/
 /config/secrets/prod/prod.decrypt.private.php
+/public/bundles/
+/var/
+/vendor/
+###< symfony/framework-bundle ###
 
-# PHPUnit
-.phpunit.result.cache
-/coverage/
+###> friendsofphp/php-cs-fixer ###
+/.php-cs-fixer.php
+/.php-cs-fixer.cache
+###< friendsofphp/php-cs-fixer ###
 
-# IDE
-/.idea
-/.vscode
-*.swp
-*.swo
-.DS_Store
-
-# Logs
-*.log
-
-# Environment
-.env
-
-# Challenge files
-CHALLENGE.md
+###> phpunit/phpunit ###
+/phpunit.xml
+/.phpunit.cache/
+###< phpunit/phpunit ###
