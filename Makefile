@@ -1,5 +1,5 @@
 # Siroko Cart - Makefile
-.PHONY: help up down build restart logs test clean install quality phpstan benchmark cs-fix cs-check
+.PHONY: help up down build restart logs test clean install quality phpstan benchmark cs-fix cs-check install-hooks
 
 # Default target
 help: ## Show this help message
@@ -74,3 +74,7 @@ migrate: ## Run Doctrine migrations
 
 schema-validate: ## Validate Doctrine schema
 	docker-compose exec app php bin/console doctrine:schema:validate
+
+# Git hooks
+install-hooks: ## Install Git hooks for code quality
+	./.githooks/install-hooks.sh

@@ -1,0 +1,86 @@
+#!/bin/bash
+
+# Siroko Cart - Pre-commit hook for code quality
+# This script runs before each commit to ensure code quality
+
+set -e
+
+echo "🔍 Running pre-commit checks..."
+
+# Colors for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+NC='\033[0m' # No Color
+
+# Function to print colored output
+print_status() {
+    echo -e "${GREEN}✓${NC} $1"
+}
+
+print_error() {
+    echo -e "${RED}✗${NC} $1"
+}
+
+print_warning() {
+    echo -e "${YELLOW}⚠${NC} $1"
+}
+
+# Check if we're in a Docker environment
+if [ -f "docker-compose.yml" ] && command -v docker-compose &> /dev/null; then
+    DOCKER_PREFIX="docker-compose exec -T app"
+    print_status "Using Docker environment"
+else
+    DOCKER_PREFIX=""
+    print_warning "Running in local environment"
+fi
+
+# 1. PHP CS Fixer - Check code style
+echo ""
+echo "📝 Checking code style with PHP CS Fixer..."
+if $DOCKER_PREFIX vendor/bin/php-cs-fixer fix --dry-run --diff --no-interaction; then
+    print_status "Code style check passed"
+else
+    print_error "Code style issues found. Run 'make cs-fix' to fix them."
+    exit 1
+fi
+
+# 2. PHPStan - Static analysis
+echo ""
+echo "🔍 Running static analysis with PHPStan..."
+if $DOCKER_PREFIX vendor/bin/phpstan analyse --no-progress --no-interaction; then
+    print_status "Static analysis passed"
+else
+    print_error "Static analysis failed. Please fix the issues."
+    exit 1
+fi
+
+# 3. PHPUnit - Run tests
+echo ""
+echo "🧪 Running tests with PHPUnit..."
+if $DOCKER_PREFIX php bin/phpunit --no-coverage; then
+    print_status "All tests passed"
+else
+    print_error "Tests failed. Please fix failing tests before committing."
+    exit 1
+fi
+
+# 4. Check for TODO/FIXME comments in staged files
+echo ""
+echo "📋 Checking for TODO/FIXME comments..."
+staged_files=$(git diff --cached --name-only --diff-filter=ACM | grep -E '\.(php|js|ts|vue)$' || true)
+if [ -n "$staged_files" ]; then
+    todo_count=$(echo "$staged_files" | xargs grep -l "TODO\|FIXME" 2>/dev/null | wc -l || echo "0")
+    if [ "$todo_count" -gt 0 ]; then
+        print_warning "$todo_count file(s) contain TODO/FIXME comments"
+        echo "$staged_files" | xargs grep -n "TODO\|FIXME" 2>/dev/null || true
+    else
+        print_status "No TODO/FIXME comments found"
+    fi
+else
+    print_status "No relevant files to check for TODOs"
+fi
+
+echo ""
+print_status "All pre-commit checks passed! 🎉"
+echo ""
