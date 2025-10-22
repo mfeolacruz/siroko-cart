@@ -1,4 +1,4 @@
-.PHONY: help up down build restart logs shell composer test console
+.PHONY: help up down build restart logs shell composer test console phpstan
 
 help: ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
@@ -34,3 +34,6 @@ test: ## Run tests
 
 console: ## Access Symfony console
 	docker compose exec php php bin/console
+
+phpstan: ## Run PHPStan static analysis
+	docker compose exec php vendor/bin/phpstan analyse

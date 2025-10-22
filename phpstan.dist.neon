@@ -1,0 +1,8 @@
+parameters:
+    level: 9
+    paths:
+        - src/
+        - tests/
+    excludePaths:
+        - src/Infrastructure/Symfony/Kernel.php
+        - tests/bootstrap.php
