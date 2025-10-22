@@ -1,0 +1,30 @@
+#!/bin/sh
+
+echo "🔍 Running pre-commit checks..."
+
+# Check PHPStan
+echo "📊 Running PHPStan..."
+docker compose exec -T php vendor/bin/phpstan analyse
+phpstan_exit=$?
+
+# Allow exit code 0 (success) or exit code when no files found
+if [ $phpstan_exit -ne 0 ]; then
+    # Check if it's just "no files found" error
+    if docker compose exec -T php vendor/bin/phpstan analyse 2>&1 | grep -q "No files found to analyse"; then
+        echo "⚠️  PHPStan: No files to analyse yet (OK for initial setup)"
+    else
+        echo "❌ PHPStan failed. Fix errors before committing."
+        exit 1
+    fi
+fi
+
+# Check PHP CS Fixer
+echo "🎨 Checking code style..."
+docker compose exec -T php vendor/bin/php-cs-fixer fix --dry-run --diff
+if [ $? -ne 0 ]; then
+    echo "❌ Code style issues found. Run 'make cs-fix' to fix them."
+    exit 1
+fi
+
+echo "✅ All pre-commit checks passed!"
+exit 0
