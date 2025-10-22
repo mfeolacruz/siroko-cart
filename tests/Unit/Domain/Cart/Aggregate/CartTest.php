@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Unit\Domain\Cart\Aggregate;
 
 use App\Domain\Cart\Aggregate\Cart;
+use App\Domain\Cart\Event\CartCreated;
 use App\Domain\Cart\ValueObject\CartId;
 use App\Domain\Cart\ValueObject\UserId;
 use PHPUnit\Framework\TestCase;
@@ -75,5 +76,28 @@ final class CartTest extends TestCase
 
         $this->assertEquals($userId, $cart->userId());
         $this->assertFalse($cart->isAnonymous());
+    }
+
+    public function testCartRecordsCreatedEvent(): void
+    {
+        $cartId = CartId::generate();
+        $userId = UserId::generate();
+
+        $cart = Cart::create($cartId, $userId);
+        $events = $cart->pullDomainEvents();
+
+        $this->assertCount(1, $events);
+        $this->assertInstanceOf(CartCreated::class, $events[0]);
+    }
+
+    public function testPullDomainEventsClearsEvents(): void
+    {
+        $cartId = CartId::generate();
+
+        $cart = Cart::create($cartId);
+        $cart->pullDomainEvents(); // First pull
+        $events = $cart->pullDomainEvents(); // Second pull
+
+        $this->assertCount(0, $events);
     }
 }
