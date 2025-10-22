@@ -1,0 +1,36 @@
+.PHONY: help up down build restart logs shell composer test console
+
+help: ## Show this help
+	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
+
+up: ## Start containers
+	docker compose up -d
+
+down: ## Stop containers
+	docker compose down
+
+build: ## Build containers
+	docker compose build --no-cache
+
+restart: down up ## Restart containers
+
+logs: ## View all container logs
+	docker compose logs -f
+
+logs-php: ## View PHP logs
+	docker compose logs -f php
+
+logs-nginx: ## View Nginx logs
+	docker compose logs -f nginx
+
+shell: ## Access PHP shell
+	docker compose exec php bash
+
+composer: ## Install Composer dependencies
+	docker compose exec php composer install
+
+test: ## Run tests
+	docker compose exec php php bin/phpunit
+
+console: ## Access Symfony console
+	docker compose exec php php bin/console
