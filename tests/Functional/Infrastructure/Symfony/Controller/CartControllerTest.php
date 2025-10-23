@@ -69,4 +69,27 @@ final class CartControllerTest extends WebTestCase
         $this->assertArrayHasKey('user_id', $responseData);
         $this->assertEquals($userId, $responseData['user_id']);
     }
+
+    public function testCreateCartWithInvalidUserIdReturns400(): void
+    {
+        $client = static::createClient();
+
+        $client->request(
+            'POST',
+            '/api/carts',
+            [],
+            [],
+            ['CONTENT_TYPE' => 'application/json'],
+            (string) json_encode(['user_id' => 'invalid-uuid'])
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_BAD_REQUEST);
+
+        $content = $client->getResponse()->getContent();
+        $this->assertIsString($content);
+
+        $responseData = json_decode($content, true);
+        $this->assertIsArray($responseData);
+        $this->assertArrayHasKey('error', $responseData);
+    }
 }
