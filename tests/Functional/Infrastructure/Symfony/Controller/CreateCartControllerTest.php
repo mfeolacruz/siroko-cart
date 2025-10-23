@@ -8,7 +8,7 @@ use App\Domain\Cart\ValueObject\UserId;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\HttpFoundation\Response;
 
-final class CartControllerTest extends WebTestCase
+final class CreateCartControllerTest extends WebTestCase
 {
     public function testCreateCartReturnsCreatedStatusAndCartId(): void
     {
