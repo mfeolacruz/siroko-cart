@@ -37,7 +37,7 @@ final class CartController extends AbstractController
                         type: 'string',
                         format: 'uuid',
                         description: 'Optional user ID in UUID v4 format',
-                        example: '123e4567-e89b-12d3-a456-426614174000',
+                        example: '550e8400-e29b-41d4-a716-446655440000', // UUID v4 válido
                         nullable: true
                     ),
                 ],
@@ -56,14 +56,14 @@ final class CartController extends AbstractController
                             type: 'string',
                             format: 'uuid',
                             description: 'Unique cart identifier',
-                            example: '987fcdeb-51a2-4567-8901-23456789abcd'
+                            example: '987fcdeb-51a2-41d4-8901-23456789abcd' // UUID v4 válido
                         ),
                         new OA\Property(
                             property: 'user_id',
                             type: 'string',
                             format: 'uuid',
                             description: 'User ID if provided',
-                            example: '123e4567-e89b-12d3-a456-426614174000',
+                            example: '550e8400-e29b-41d4-a716-446655440000', // UUID v4 válido
                             nullable: true
                         ),
                         new OA\Property(
@@ -79,13 +79,16 @@ final class CartController extends AbstractController
             ),
             new OA\Response(
                 response: 400,
-                description: 'Invalid request data (malformed JSON or invalid UUID format)',
+                description: 'Invalid request data (malformed JSON or invalid UUID v4 format)',
                 content: new OA\JsonContent(
                     properties: [
                         new OA\Property(
                             property: 'error',
-                            type: 'string',
-                            example: 'Invalid UUID format for user_id'
+                            type: 'object',
+                            properties: [
+                                new OA\Property(property: 'code', type: 'string', example: 'invalid_uuid'),
+                                new OA\Property(property: 'message', type: 'string', example: 'Invalid UUID v4 format'),
+                            ]
                         ),
                     ],
                     type: 'object'
