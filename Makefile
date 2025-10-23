@@ -129,9 +129,28 @@ db-migrate: ## Run migrations on main database
 db-test-migrate: ## Run migrations on test database
 	docker compose exec php php bin/console doctrine:migrations:migrate --no-interaction --env=test
 
-db-reset: ## Reset test database
+db-migration: ## Generate new migration
+	docker compose exec php php bin/console doctrine:migrations:diff
+
+db-reset: ## Reset database
+	@docker compose exec database mysql -u root -p$${MYSQL_ROOT_PASSWORD} -e "DROP DATABASE IF EXISTS $${MYSQL_DATABASE};" || true
+	@docker compose exec database mysql -u root -p$${MYSQL_ROOT_PASSWORD} -e "CREATE DATABASE $${MYSQL_DATABASE};"
+	@docker compose exec database mysql -u root -p$${MYSQL_ROOT_PASSWORD} -e "GRANT ALL PRIVILEGES ON $${MYSQL_DATABASE}.* TO '$${MYSQL_USER}'@'%';"
+	@docker compose exec php php bin/console doctrine:migrations:migrate --no-interaction
+	@echo "✅ Database reset complete"
+
+db-test-reset: ## Reset test database
 	@docker compose exec database mysql -u root -p$${MYSQL_ROOT_PASSWORD} -e "DROP DATABASE IF EXISTS $${MYSQL_TEST_DATABASE};" || true
 	@docker compose exec database mysql -u root -p$${MYSQL_ROOT_PASSWORD} -e "CREATE DATABASE $${MYSQL_TEST_DATABASE};"
 	@docker compose exec database mysql -u root -p$${MYSQL_ROOT_PASSWORD} -e "GRANT ALL PRIVILEGES ON $${MYSQL_TEST_DATABASE}.* TO '$${MYSQL_USER}'@'%';"
 	@docker compose exec php php bin/console doctrine:migrations:migrate --no-interaction --env=test
 	@echo "✅ Test database reset complete"
+
+db-clean: ## Reset database
+	@docker compose exec database mysql -u root -p$${MYSQL_ROOT_PASSWORD} -e "DROP DATABASE IF EXISTS $${MYSQL_DATABASE};" || true
+	@docker compose exec database mysql -u root -p$${MYSQL_ROOT_PASSWORD} -e "CREATE DATABASE $${MYSQL_DATABASE};"
+	@docker compose exec database mysql -u root -p$${MYSQL_ROOT_PASSWORD} -e "GRANT ALL PRIVILEGES ON $${MYSQL_DATABASE}.* TO '$${MYSQL_USER}'@'%';"
+	@docker compose exec database mysql -u root -p$${MYSQL_ROOT_PASSWORD} -e "DROP DATABASE IF EXISTS $${MYSQL_TEST_DATABASE};" || true
+	@docker compose exec database mysql -u root -p$${MYSQL_ROOT_PASSWORD} -e "CREATE DATABASE $${MYSQL_TEST_DATABASE};"
+	@docker compose exec database mysql -u root -p$${MYSQL_ROOT_PASSWORD} -e "GRANT ALL PRIVILEGES ON $${MYSQL_TEST_DATABASE}.* TO '$${MYSQL_USER}'@'%';"
+	@echo "✅ Database clean complete"
