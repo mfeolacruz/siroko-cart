@@ -232,4 +232,57 @@ final class DoctrineCartRepositoryTest extends KernelTestCase
             $item->updatedAt()->getTimestamp()
         );
     }
+
+    public function testItUpdatesCartItemQuantityCorrectly(): void
+    {
+        $cartId = CartId::generate();
+        $cart = Cart::create($cartId, UserId::generate());
+
+        // Add an item first
+        $productId = ProductId::generate();
+        $productName = ProductName::fromString('Test Product');
+        $cart->addItem($productId, $productName, Money::fromCents(2999, 'EUR'), Quantity::fromInt(2));
+
+        $this->repository->save($cart);
+
+        // Find the cart and get the item ID
+        $foundCart = $this->repository->findById($cartId);
+        $this->assertNotNull($foundCart);
+
+        $items = $foundCart->items();
+        $this->assertCount(1, $items);
+        $cartItemId = $items[0]->id();
+
+        // Store original timestamps
+        $originalCreatedAt = $items[0]->createdAt();
+        $originalUpdatedAt = $items[0]->updatedAt();
+
+        // Add a small delay to ensure timestamp difference
+        usleep(1000000); // 1 second
+
+        // Update the quantity using the domain method
+        $foundCart->updateItemQuantity($cartItemId, Quantity::fromInt(5));
+
+        $this->repository->save($foundCart);
+
+        // Verify the update persisted correctly
+        $updatedCart = $this->repository->findById($cartId);
+        $this->assertNotNull($updatedCart);
+
+        $updatedItems = $updatedCart->items();
+        $this->assertCount(1, $updatedItems);
+
+        $updatedItem = $updatedItems[0];
+        $this->assertEquals(5, $updatedItem->quantity()->value());
+
+        // Verify timestamps - createdAt should be same, updatedAt should be different
+        $this->assertEquals(
+            $originalCreatedAt->getTimestamp(),
+            $updatedItem->createdAt()->getTimestamp()
+        );
+        $this->assertGreaterThan(
+            $originalUpdatedAt->getTimestamp(),
+            $updatedItem->updatedAt()->getTimestamp()
+        );
+    }
 }
