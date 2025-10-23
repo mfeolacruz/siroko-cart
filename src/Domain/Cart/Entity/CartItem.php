@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Cart\Entity;
 
+use App\Domain\Cart\Aggregate\Cart;
 use App\Domain\Cart\ValueObject\CartItemId;
 use App\Domain\Cart\ValueObject\Money;
 use App\Domain\Cart\ValueObject\ProductId;
@@ -18,6 +19,9 @@ final class CartItem
         private readonly ProductName $name,
         private readonly Money $unitPrice,
         private Quantity $quantity,
+        private readonly \DateTimeImmutable $createdAt,
+        private \DateTimeImmutable $updatedAt,
+        private ?Cart $cart = null,
     ) {
     }
 
@@ -28,7 +32,9 @@ final class CartItem
         Money $unitPrice,
         Quantity $quantity,
     ): self {
-        return new self($id, $productId, $name, $unitPrice, $quantity);
+        $now = new \DateTimeImmutable();
+
+        return new self($id, $productId, $name, $unitPrice, $quantity, $now, $now);
     }
 
     public function id(): CartItemId
@@ -56,6 +62,21 @@ final class CartItem
         return $this->quantity;
     }
 
+    public function createdAt(): \DateTimeImmutable
+    {
+        return $this->createdAt;
+    }
+
+    public function updatedAt(): \DateTimeImmutable
+    {
+        return $this->updatedAt;
+    }
+
+    public function cart(): ?Cart
+    {
+        return $this->cart;
+    }
+
     public function subtotal(): Money
     {
         return $this->unitPrice->multiply($this->quantity->value());
@@ -64,11 +85,13 @@ final class CartItem
     public function increaseQuantity(Quantity $amount): void
     {
         $this->quantity = $this->quantity->increase($amount);
+        $this->updatedAt = new \DateTimeImmutable();
     }
 
     public function updateQuantity(Quantity $newQuantity): void
     {
         $this->quantity = $newQuantity;
+        $this->updatedAt = new \DateTimeImmutable();
     }
 
     public function isSameProduct(self $other): bool
