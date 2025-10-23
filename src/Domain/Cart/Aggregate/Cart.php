@@ -6,6 +6,7 @@ namespace App\Domain\Cart\Aggregate;
 
 use App\Domain\Cart\Entity\CartItem;
 use App\Domain\Cart\Event\CartCreated;
+use App\Domain\Cart\Event\CartItemAdded;
 use App\Domain\Cart\ValueObject\CartId;
 use App\Domain\Cart\ValueObject\CartItemId;
 use App\Domain\Cart\ValueObject\Money;
@@ -78,15 +79,29 @@ final class Cart
 
         if (isset($this->items[$productIdValue])) {
             $this->items[$productIdValue]->increaseQuantity($quantity);
+            $cartItemId = $this->items[$productIdValue]->id();
         } else {
+            $cartItemId = CartItemId::generate();
             $this->items[$productIdValue] = CartItem::create(
-                CartItemId::generate(),
+                $cartItemId,
                 $productId,
                 $name,
                 $unitPrice,
                 $quantity
             );
         }
+
+        $this->record(
+            CartItemAdded::create(
+                $this->id,
+                $cartItemId,
+                $productId,
+                $name,
+                $unitPrice,
+                $quantity,
+                new \DateTimeImmutable()
+            )
+        );
     }
 
     /**
