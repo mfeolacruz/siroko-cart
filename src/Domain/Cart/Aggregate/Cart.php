@@ -4,14 +4,20 @@ declare(strict_types=1);
 
 namespace App\Domain\Cart\Aggregate;
 
+use App\Domain\Cart\Entity\CartItem;
 use App\Domain\Cart\Event\CartCreated;
 use App\Domain\Cart\ValueObject\CartId;
+use App\Domain\Cart\ValueObject\CartItemId;
+use App\Domain\Cart\ValueObject\Money;
+use App\Domain\Cart\ValueObject\ProductId;
+use App\Domain\Cart\ValueObject\ProductName;
+use App\Domain\Cart\ValueObject\Quantity;
 use App\Domain\Cart\ValueObject\UserId;
 use App\Domain\Shared\Event\DomainEvent;
 
 final class Cart
 {
-    /** @var array<empty, empty> */
+    /** @var array<string, CartItem> */
     private array $items = [];
 
     /** @var array<int, DomainEvent> */
@@ -62,17 +68,53 @@ final class Cart
         return $this->expiresAt;
     }
 
+    public function addItem(
+        ProductId $productId,
+        ProductName $name,
+        Money $unitPrice,
+        Quantity $quantity,
+    ): void {
+        $productIdValue = $productId->value();
+
+        if (isset($this->items[$productIdValue])) {
+            $this->items[$productIdValue]->increaseQuantity($quantity);
+        } else {
+            $this->items[$productIdValue] = CartItem::create(
+                CartItemId::generate(),
+                $productId,
+                $name,
+                $unitPrice,
+                $quantity
+            );
+        }
+    }
+
     /**
-     * @return array<empty, empty>
+     * @return array<CartItem>
      */
     public function items(): array
     {
-        return $this->items;
+        return array_values($this->items);
+    }
+
+    public function total(): Money
+    {
+        if ($this->isEmpty()) {
+            return Money::fromCents(0, 'EUR');
+        }
+
+        $total = Money::fromCents(0, 'EUR');
+
+        foreach ($this->items as $item) {
+            $total = $total->add($item->subtotal());
+        }
+
+        return $total;
     }
 
     public function isEmpty(): bool
     {
-        return empty($this->items);
+        return 0 === count($this->items);
     }
 
     public function isAnonymous(): bool
