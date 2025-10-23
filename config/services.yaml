@@ -18,3 +18,16 @@ services:
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
+    # Repository binding
+    App\Domain\Cart\Repository\CartRepositoryInterface:
+        class: App\Infrastructure\Persistence\Doctrine\Repository\DoctrineCartRepository
+        public: true
+    # Event Dispatcher
+    App\Application\Shared\EventDispatcherInterface:
+        class: App\Infrastructure\Event\SymfonyEventDispatcherAdapter
+        arguments:
+            - '@event_dispatcher'
+    # Exception Listener
+    App\Infrastructure\Symfony\EventListener\ExceptionListener:
+        tags:
+            - { name: kernel.event_listener, event: kernel.exception }
