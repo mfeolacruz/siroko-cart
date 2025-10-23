@@ -7,6 +7,8 @@ namespace App\Domain\Cart\Aggregate;
 use App\Domain\Cart\Entity\CartItem;
 use App\Domain\Cart\Event\CartCreated;
 use App\Domain\Cart\Event\CartItemAdded;
+use App\Domain\Cart\Event\CartItemQuantityUpdated;
+use App\Domain\Cart\Exception\CartItemNotFoundException;
 use App\Domain\Cart\ValueObject\CartId;
 use App\Domain\Cart\ValueObject\CartItemId;
 use App\Domain\Cart\ValueObject\Money;
@@ -168,6 +170,39 @@ class Cart
         }
 
         return $total;
+    }
+
+    public function findItemById(CartItemId $cartItemId): ?CartItem
+    {
+        foreach ($this->items as $item) {
+            if ($item->id()->equals($cartItemId)) {
+                return $item;
+            }
+        }
+
+        return null;
+    }
+
+    public function updateItemQuantity(CartItemId $cartItemId, Quantity $newQuantity): void
+    {
+        $item = $this->findItemById($cartItemId);
+
+        if (null === $item) {
+            throw CartItemNotFoundException::withId($cartItemId);
+        }
+
+        $previousQuantity = $item->quantity();
+        $item->updateQuantity($newQuantity);
+
+        $this->record(
+            CartItemQuantityUpdated::create(
+                $this->id,
+                $cartItemId,
+                $previousQuantity,
+                $newQuantity,
+                new \DateTimeImmutable()
+            )
+        );
     }
 
     /**
