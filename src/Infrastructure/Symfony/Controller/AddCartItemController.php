@@ -8,12 +8,14 @@ use App\Application\Cart\Command\AddCartItemCommand;
 use App\Application\Cart\Command\AddCartItemCommandHandler;
 use App\Domain\Cart\Repository\CartRepositoryInterface;
 use App\Domain\Cart\ValueObject\CartId;
+use OpenApi\Attributes as OA;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
+#[OA\Tag(name: 'Cart', description: 'Shopping cart operations')]
 final class AddCartItemController extends AbstractController
 {
     public function __construct(
@@ -23,6 +25,182 @@ final class AddCartItemController extends AbstractController
     }
 
     #[Route('/api/carts/{cartId}/items', name: 'add_cart_item', methods: ['POST'])]
+    #[OA\Post(
+        path: '/api/carts/{cartId}/items',
+        summary: 'Add item to shopping cart',
+        description: 'Adds a new item to an existing shopping cart. If the same product already exists, the quantities will be combined.',
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\JsonContent(
+                properties: [
+                    new OA\Property(
+                        property: 'product_id',
+                        type: 'string',
+                        format: 'uuid',
+                        description: 'Product ID in UUID v4 format',
+                        example: '550e8400-e29b-41d4-a716-446655440001'
+                    ),
+                    new OA\Property(
+                        property: 'product_name',
+                        type: 'string',
+                        description: 'Product name',
+                        example: 'Siroko Cycling Glasses'
+                    ),
+                    new OA\Property(
+                        property: 'unit_price',
+                        type: 'number',
+                        format: 'float',
+                        description: 'Unit price of the product',
+                        example: 99.99
+                    ),
+                    new OA\Property(
+                        property: 'currency',
+                        type: 'string',
+                        description: 'Currency code (optional, defaults to EUR)',
+                        example: 'EUR',
+                        nullable: true
+                    ),
+                    new OA\Property(
+                        property: 'quantity',
+                        type: 'integer',
+                        description: 'Quantity to add (must be positive)',
+                        example: 2
+                    ),
+                ],
+                required: ['product_id', 'product_name', 'unit_price', 'quantity'],
+                type: 'object'
+            )
+        ),
+        tags: ['Cart'],
+        parameters: [
+            new OA\Parameter(
+                name: 'cartId',
+                description: 'Cart ID in UUID v4 format',
+                in: 'path',
+                required: true,
+                schema: new OA\Schema(
+                    type: 'string',
+                    format: 'uuid',
+                    example: '987fcdeb-51a2-41d4-8901-23456789abcd'
+                )
+            ),
+        ],
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'Item added successfully to cart',
+                content: new OA\JsonContent(
+                    properties: [
+                        new OA\Property(
+                            property: 'cart_id',
+                            type: 'string',
+                            format: 'uuid',
+                            description: 'Cart identifier',
+                            example: '987fcdeb-51a2-41d4-8901-23456789abcd'
+                        ),
+                        new OA\Property(
+                            property: 'total',
+                            type: 'number',
+                            format: 'float',
+                            description: 'Total cart amount',
+                            example: 199.98
+                        ),
+                        new OA\Property(
+                            property: 'currency',
+                            type: 'string',
+                            description: 'Currency code',
+                            example: 'EUR'
+                        ),
+                        new OA\Property(
+                            property: 'items',
+                            type: 'array',
+                            description: 'List of cart items',
+                            items: new OA\Items(
+                                properties: [
+                                    new OA\Property(
+                                        property: 'id',
+                                        type: 'string',
+                                        format: 'uuid',
+                                        description: 'Cart item identifier',
+                                        example: '123e4567-e89b-12d3-a456-426614174000'
+                                    ),
+                                    new OA\Property(
+                                        property: 'product_id',
+                                        type: 'string',
+                                        format: 'uuid',
+                                        description: 'Product identifier',
+                                        example: '550e8400-e29b-41d4-a716-446655440001'
+                                    ),
+                                    new OA\Property(
+                                        property: 'product_name',
+                                        type: 'string',
+                                        description: 'Product name',
+                                        example: 'Siroko Cycling Glasses'
+                                    ),
+                                    new OA\Property(
+                                        property: 'unit_price',
+                                        type: 'number',
+                                        format: 'float',
+                                        description: 'Unit price',
+                                        example: 99.99
+                                    ),
+                                    new OA\Property(
+                                        property: 'currency',
+                                        type: 'string',
+                                        description: 'Currency code',
+                                        example: 'EUR'
+                                    ),
+                                    new OA\Property(
+                                        property: 'quantity',
+                                        type: 'integer',
+                                        description: 'Quantity in cart',
+                                        example: 2
+                                    ),
+                                    new OA\Property(
+                                        property: 'subtotal',
+                                        type: 'number',
+                                        format: 'float',
+                                        description: 'Subtotal for this item',
+                                        example: 199.98
+                                    ),
+                                ],
+                                type: 'object'
+                            )
+                        ),
+                    ],
+                    type: 'object'
+                )
+            ),
+            new OA\Response(
+                response: 400,
+                description: 'Invalid request data',
+                content: new OA\JsonContent(
+                    properties: [
+                        new OA\Property(
+                            property: 'error',
+                            type: 'string',
+                            example: 'Missing required fields: product_id, product_name, unit_price, quantity'
+                        ),
+                    ],
+                    type: 'object'
+                )
+            ),
+            new OA\Response(
+                response: 404,
+                description: 'Cart not found',
+                content: new OA\JsonContent(
+                    properties: [
+                        new OA\Property(
+                            property: 'error',
+                            type: 'string',
+                            example: 'Cart not found'
+                        ),
+                    ],
+                    type: 'object'
+                )
+            ),
+        ]
+    )]
     public function __invoke(string $cartId, Request $request): JsonResponse
     {
         try {
