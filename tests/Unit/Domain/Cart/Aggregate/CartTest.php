@@ -8,7 +8,10 @@ use App\Domain\Cart\Aggregate\Cart;
 use App\Domain\Cart\Entity\CartItem;
 use App\Domain\Cart\Event\CartCreated;
 use App\Domain\Cart\Event\CartItemAdded;
+use App\Domain\Cart\Event\CartItemQuantityUpdated;
+use App\Domain\Cart\Exception\CartItemNotFoundException;
 use App\Domain\Cart\ValueObject\CartId;
+use App\Domain\Cart\ValueObject\CartItemId;
 use App\Domain\Cart\ValueObject\Money;
 use App\Domain\Cart\ValueObject\ProductId;
 use App\Domain\Cart\ValueObject\ProductName;
@@ -203,5 +206,122 @@ final class CartTest extends TestCase
 
         $lastEvent = end($events);
         $this->assertInstanceOf(CartItemAdded::class, $lastEvent);
+    }
+
+    public function testFindItemByIdReturnsCorrectItem(): void
+    {
+        $cartId = CartId::generate();
+        $cart = Cart::create($cartId);
+
+        // Add multiple items
+        $productId1 = ProductId::fromString('550e8400-e29b-41d4-a716-446655440001');
+        $productId2 = ProductId::fromString('550e8400-e29b-41d4-a716-446655440002');
+
+        $cart->addItem(
+            $productId1,
+            ProductName::fromString('Product 1'),
+            Money::fromCents(1999, 'EUR'),
+            Quantity::fromInt(1)
+        );
+
+        $cart->addItem(
+            $productId2,
+            ProductName::fromString('Product 2'),
+            Money::fromCents(2999, 'EUR'),
+            Quantity::fromInt(2)
+        );
+
+        $items = $cart->items();
+        $firstItemId = $items[0]->id();
+        $secondItemId = $items[1]->id();
+
+        // Test finding first item
+        $foundItem = $cart->findItemById($firstItemId);
+        $this->assertNotNull($foundItem);
+        $this->assertEquals($firstItemId, $foundItem->id());
+        $this->assertEquals('Product 1', $foundItem->name()->value());
+
+        // Test finding second item
+        $foundItem = $cart->findItemById($secondItemId);
+        $this->assertNotNull($foundItem);
+        $this->assertEquals($secondItemId, $foundItem->id());
+        $this->assertEquals('Product 2', $foundItem->name()->value());
+    }
+
+    public function testFindItemByIdReturnsNullWhenNotFound(): void
+    {
+        $cartId = CartId::generate();
+        $cart = Cart::create($cartId);
+
+        $nonExistentItemId = CartItemId::generate();
+
+        $foundItem = $cart->findItemById($nonExistentItemId);
+        $this->assertNull($foundItem);
+    }
+
+    public function testUpdateItemQuantityChangesExistingItemQuantity(): void
+    {
+        $cartId = CartId::generate();
+        $cart = Cart::create($cartId);
+
+        // Add an item first
+        $productId = ProductId::fromString('550e8400-e29b-41d4-a716-446655440001');
+        $cart->addItem(
+            $productId,
+            ProductName::fromString('Test Product'),
+            Money::fromCents(2999, 'EUR'),
+            Quantity::fromInt(2)
+        );
+
+        // Get the item ID
+        $items = $cart->items();
+        $cartItemId = $items[0]->id();
+
+        // Update the quantity
+        $cart->updateItemQuantity($cartItemId, Quantity::fromInt(5));
+
+        // Verify the quantity was updated
+        $updatedItems = $cart->items();
+        $this->assertEquals(5, $updatedItems[0]->quantity()->value());
+    }
+
+    public function testUpdateItemQuantityThrowsExceptionWhenItemNotFound(): void
+    {
+        $cartId = CartId::generate();
+        $cart = Cart::create($cartId);
+
+        $nonExistentItemId = CartItemId::generate();
+
+        $this->expectException(CartItemNotFoundException::class);
+
+        $cart->updateItemQuantity($nonExistentItemId, Quantity::fromInt(5));
+    }
+
+    public function testUpdateItemQuantityRecordsCartItemQuantityUpdatedEvent(): void
+    {
+        $cartId = CartId::generate();
+        $cart = Cart::create($cartId);
+
+        // Add an item first
+        $productId = ProductId::fromString('550e8400-e29b-41d4-a716-446655440001');
+        $cart->addItem(
+            $productId,
+            ProductName::fromString('Test Product'),
+            Money::fromCents(2999, 'EUR'),
+            Quantity::fromInt(2)
+        );
+
+        // Clear events to focus on update event
+        $cart->pullDomainEvents();
+
+        // Get the item ID and update quantity
+        $items = $cart->items();
+        $cartItemId = $items[0]->id();
+        $cart->updateItemQuantity($cartItemId, Quantity::fromInt(5));
+
+        // Verify event was recorded
+        $events = $cart->pullDomainEvents();
+        $this->assertCount(1, $events);
+        $this->assertInstanceOf(CartItemQuantityUpdated::class, $events[0]);
     }
 }
