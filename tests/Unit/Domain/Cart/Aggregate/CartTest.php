@@ -7,6 +7,7 @@ namespace App\Tests\Unit\Domain\Cart\Aggregate;
 use App\Domain\Cart\Aggregate\Cart;
 use App\Domain\Cart\Entity\CartItem;
 use App\Domain\Cart\Event\CartCreated;
+use App\Domain\Cart\Event\CartItemAdded;
 use App\Domain\Cart\ValueObject\CartId;
 use App\Domain\Cart\ValueObject\Money;
 use App\Domain\Cart\ValueObject\ProductId;
@@ -185,5 +186,22 @@ final class CartTest extends TestCase
 
         $this->assertCount(1, $items);
         $this->assertInstanceOf(CartItem::class, $items[0]);
+    }
+
+    public function testAddingItemRecordsEvent(): void
+    {
+        $cart = Cart::create(CartId::generate(), UserId::generate());
+        $productId = ProductId::generate();
+        $name = ProductName::fromString('Gafas Siroko');
+        $unitPrice = Money::fromCents(5000, 'EUR');
+        $quantity = Quantity::fromInt(2);
+
+        $cart->addItem($productId, $name, $unitPrice, $quantity);
+
+        $events = $cart->pullDomainEvents();
+        $this->assertCount(2, $events); // CartCreated + CartItemAdded
+
+        $lastEvent = end($events);
+        $this->assertInstanceOf(CartItemAdded::class, $lastEvent);
     }
 }
