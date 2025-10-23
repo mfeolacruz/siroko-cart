@@ -20,7 +20,7 @@ final readonly class AddCartItemCommandHandler
     ) {
     }
 
-    public function __invoke(AddCartItemCommand $command): void
+    public function handle(AddCartItemCommand $command): void
     {
         $cartId = CartId::fromString($command->cartId);
 
