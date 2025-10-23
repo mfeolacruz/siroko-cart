@@ -253,7 +253,7 @@ final class AddCartItemController extends AbstractController
                 $data['quantity']
             );
 
-            ($this->commandHandler)($command);
+            $this->commandHandler->handle($command);
 
             // Fetch updated cart
             $cart = $this->cartRepository->findById(CartId::fromString($cartId));

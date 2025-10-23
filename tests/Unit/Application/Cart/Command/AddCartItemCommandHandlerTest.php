@@ -61,7 +61,7 @@ final class AddCartItemCommandHandlerTest extends TestCase
             ->expects($this->once())
             ->method('dispatch');
 
-        $this->handler->__invoke($command);
+        $this->handler->handle($command);
 
         $this->assertCount(1, $cart->items());
     }
@@ -87,6 +87,6 @@ final class AddCartItemCommandHandlerTest extends TestCase
         $this->expectException(\RuntimeException::class);
         $this->expectExceptionMessage('Cart not found');
 
-        $this->handler->__invoke($command);
+        $this->handler->handle($command);
     }
 }
