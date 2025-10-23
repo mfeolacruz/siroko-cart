@@ -84,6 +84,7 @@ final class Cart
             $cartItemId = CartItemId::generate();
             $this->items[$productIdValue] = CartItem::create(
                 $cartItemId,
+                $this,
                 $productId,
                 $name,
                 $unitPrice,
@@ -135,6 +136,38 @@ final class Cart
     public function isAnonymous(): bool
     {
         return null === $this->userId;
+    }
+
+    /**
+     * Reconstruct Cart from persistence (used by infrastructure).
+     *
+     * @param array<CartItem> $items
+     */
+    public static function reconstruct(
+        CartId $id,
+        ?UserId $userId,
+        \DateTimeImmutable $createdAt,
+        \DateTimeImmutable $expiresAt,
+        array $items,
+    ): self {
+        $cart = new self($id, $userId, $createdAt, $expiresAt);
+
+        // Rebuild internal items structure indexed by productId
+        foreach ($items as $item) {
+            $cart->items[$item->productId()->value()] = $item;
+        }
+
+        return $cart;
+    }
+
+    public function totalItems(): int
+    {
+        $total = 0;
+        foreach ($this->items as $item) {
+            $total += $item->quantity()->value();
+        }
+
+        return $total;
     }
 
     /**
