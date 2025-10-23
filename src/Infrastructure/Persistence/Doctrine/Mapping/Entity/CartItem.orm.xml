@@ -7,7 +7,7 @@
     <entity name="App\Domain\Cart\Entity\CartItem" table="cart_items">
         <id name="id" type="cart_item_id" column="id"/>
 
-        <many-to-one field="cart" target-entity="App\Domain\Cart\Aggregate\Cart" inversed-by="items">
+        <many-to-one field="cart" target-entity="App\Domain\Cart\Aggregate\Cart">
             <join-column name="cart_id" referenced-column-name="id" nullable="false" on-delete="CASCADE"/>
         </many-to-one>
 

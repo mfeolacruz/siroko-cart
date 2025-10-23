@@ -16,7 +16,7 @@ use App\Domain\Cart\ValueObject\Quantity;
 use App\Domain\Cart\ValueObject\UserId;
 use App\Domain\Shared\Event\DomainEvent;
 
-final class Cart
+class Cart
 {
     /** @var array<string, CartItem> */
     private array $items = [];
