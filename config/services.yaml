@@ -22,3 +22,8 @@ services:
     App\Domain\Cart\Repository\CartRepositoryInterface:
         class: App\Infrastructure\Persistence\Doctrine\Repository\DoctrineCartRepository
         public: true
+    # Event Dispatcher
+    App\Application\Shared\EventDispatcherInterface:
+        class: App\Infrastructure\Event\SymfonyEventDispatcherAdapter
+        arguments:
+            - '@event_dispatcher'
