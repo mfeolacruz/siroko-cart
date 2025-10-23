@@ -12,5 +12,11 @@
         <field name="userId" type="user_id" column="user_id" nullable="true"/>
         <field name="createdAt" type="datetime_immutable" column="created_at"/>
         <field name="expiresAt" type="datetime_immutable" column="expires_at"/>
+
+        <one-to-many field="items" target-entity="App\Domain\Cart\Entity\CartItem" mapped-by="cart" orphan-removal="true">
+            <cascade>
+                <cascade-all/>
+            </cascade>
+        </one-to-many>
     </entity>
 </doctrine-mapping>

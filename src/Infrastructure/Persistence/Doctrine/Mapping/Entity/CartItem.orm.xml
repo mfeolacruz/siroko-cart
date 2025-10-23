@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<doctrine-mapping xmlns="http://doctrine-project.org/schemas/orm/doctrine-mapping"
+                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                  xsi:schemaLocation="http://doctrine-project.org/schemas/orm/doctrine-mapping
+                  https://www.doctrine-project.org/schemas/orm/doctrine-mapping.xsd">
+
+    <entity name="App\Domain\Cart\Entity\CartItem" table="cart_items">
+        <id name="id" type="cart_item_id" column="id"/>
+
+        <many-to-one field="cart" target-entity="App\Domain\Cart\Aggregate\Cart" inversed-by="items">
+            <join-column name="cart_id" referenced-column-name="id" nullable="false" on-delete="CASCADE"/>
+        </many-to-one>
+
+        <field name="productId" type="product_id" column="product_id" nullable="false"/>
+        <field name="name" type="product_name" column="product_name" nullable="false"/>
+        <field name="unitPrice" type="money" column="unit_price" nullable="false"/>
+        <field name="quantity" type="quantity" column="quantity" nullable="false"/>
+        <field name="createdAt" type="datetime_immutable" column="created_at" nullable="false"/>
+        <field name="updatedAt" type="datetime_immutable" column="updated_at" nullable="false"/>
+    </entity>
+
+</doctrine-mapping>
