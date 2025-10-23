@@ -8,6 +8,7 @@ use App\Domain\Cart\Entity\CartItem;
 use App\Domain\Cart\Event\CartCreated;
 use App\Domain\Cart\Event\CartItemAdded;
 use App\Domain\Cart\Event\CartItemQuantityUpdated;
+use App\Domain\Cart\Event\CartItemRemoved;
 use App\Domain\Cart\Exception\CartItemNotFoundException;
 use App\Domain\Cart\ValueObject\CartId;
 use App\Domain\Cart\ValueObject\CartItemId;
@@ -201,6 +202,32 @@ class Cart
                 $previousQuantity,
                 $newQuantity,
                 new \DateTimeImmutable()
+            )
+        );
+    }
+
+    public function removeItem(CartItemId $cartItemId): void
+    {
+        $itemToRemove = $this->findItemById($cartItemId);
+
+        if (null === $itemToRemove) {
+            throw CartItemNotFoundException::withId($cartItemId);
+        }
+
+        // Remove the item from internal array by finding its array key
+        foreach ($this->items as $productIdKey => $item) {
+            if ($item->id()->equals($cartItemId)) {
+                unset($this->items[$productIdKey]);
+                break;
+            }
+        }
+
+        // Record domain event
+        $this->record(
+            CartItemRemoved::create(
+                $this->id,
+                $cartItemId,
+                $itemToRemove->productId()
             )
         );
     }
