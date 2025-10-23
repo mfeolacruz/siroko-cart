@@ -123,4 +123,76 @@ final class CartItemTest extends TestCase
 
         $this->assertFalse($cartItem1->isSameProduct($cartItem2));
     }
+
+    public function testHasCreatedAtTimestamp(): void
+    {
+        $cartItem = CartItem::create(
+            CartItemId::generate(),
+            ProductId::generate(),
+            ProductName::fromString('Gafas Siroko'),
+            Money::fromCents(5000, 'EUR'),
+            Quantity::fromInt(1)
+        );
+
+        $this->assertInstanceOf(\DateTimeImmutable::class, $cartItem->createdAt());
+        $this->assertLessThanOrEqual(new \DateTimeImmutable(), $cartItem->createdAt());
+    }
+
+    public function testHasUpdatedAtTimestamp(): void
+    {
+        $cartItem = CartItem::create(
+            CartItemId::generate(),
+            ProductId::generate(),
+            ProductName::fromString('Gafas Siroko'),
+            Money::fromCents(5000, 'EUR'),
+            Quantity::fromInt(1)
+        );
+
+        $this->assertInstanceOf(\DateTimeImmutable::class, $cartItem->updatedAt());
+        $this->assertLessThanOrEqual(new \DateTimeImmutable(), $cartItem->updatedAt());
+    }
+
+    public function testUpdatedAtChangesWhenQuantityIncreases(): void
+    {
+        $cartItem = CartItem::create(
+            CartItemId::generate(),
+            ProductId::generate(),
+            ProductName::fromString('Gafas Siroko'),
+            Money::fromCents(5000, 'EUR'),
+            Quantity::fromInt(1)
+        );
+
+        $originalUpdatedAt = $cartItem->updatedAt();
+
+        sleep(1); // Wait 1 second to ensure timestamp difference
+
+        $cartItem->increaseQuantity(Quantity::fromInt(1));
+
+        $this->assertGreaterThan(
+            $originalUpdatedAt->getTimestamp(),
+            $cartItem->updatedAt()->getTimestamp()
+        );
+    }
+
+    public function testUpdatedAtChangesWhenQuantityUpdates(): void
+    {
+        $cartItem = CartItem::create(
+            CartItemId::generate(),
+            ProductId::generate(),
+            ProductName::fromString('Gafas Siroko'),
+            Money::fromCents(5000, 'EUR'),
+            Quantity::fromInt(1)
+        );
+
+        $originalUpdatedAt = $cartItem->updatedAt();
+
+        sleep(1); // Wait 1 second to ensure timestamp difference
+
+        $cartItem->updateQuantity(Quantity::fromInt(5));
+
+        $this->assertGreaterThan(
+            $originalUpdatedAt->getTimestamp(),
+            $cartItem->updatedAt()->getTimestamp()
+        );
+    }
 }
