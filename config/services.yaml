@@ -27,3 +27,7 @@ services:
         class: App\Infrastructure\Event\SymfonyEventDispatcherAdapter
         arguments:
             - '@event_dispatcher'
+    # Exception Listener
+    App\Infrastructure\Symfony\EventListener\ExceptionListener:
+        tags:
+            - { name: kernel.event_listener, event: kernel.exception }
