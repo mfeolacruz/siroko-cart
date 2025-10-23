@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\Domain\Cart\Entity;
 
+use App\Domain\Cart\Aggregate\Cart;
 use App\Domain\Cart\Entity\CartItem;
+use App\Domain\Cart\ValueObject\CartId;
 use App\Domain\Cart\ValueObject\CartItemId;
 use App\Domain\Cart\ValueObject\Money;
 use App\Domain\Cart\ValueObject\ProductId;
@@ -14,6 +16,14 @@ use PHPUnit\Framework\TestCase;
 
 final class CartItemTest extends TestCase
 {
+    private Cart $cart;
+
+    protected function setUp(): void
+    {
+        // Create a cart fixture for all tests
+        $this->cart = Cart::create(CartId::generate());
+    }
+
     public function testCanBeCreated(): void
     {
         $id = CartItemId::generate();
@@ -22,7 +32,7 @@ final class CartItemTest extends TestCase
         $unitPrice = Money::fromCents(4999, 'EUR');
         $quantity = Quantity::fromInt(2);
 
-        $cartItem = CartItem::create($id, $productId, $name, $unitPrice, $quantity);
+        $cartItem = CartItem::create($id, $this->cart, $productId, $name, $unitPrice, $quantity);
 
         $this->assertInstanceOf(CartItem::class, $cartItem);
         $this->assertTrue($cartItem->id()->equals($id));
@@ -40,7 +50,7 @@ final class CartItemTest extends TestCase
         $unitPrice = Money::fromCents(4999, 'EUR'); // 49.99€
         $quantity = Quantity::fromInt(3);
 
-        $cartItem = CartItem::create($id, $productId, $name, $unitPrice, $quantity);
+        $cartItem = CartItem::create($id, $this->cart, $productId, $name, $unitPrice, $quantity);
         $subtotal = $cartItem->subtotal();
 
         $this->assertEquals(14997, $subtotal->amountInCents()); // 49.99 * 3 = 149.97€
@@ -55,7 +65,7 @@ final class CartItemTest extends TestCase
         $unitPrice = Money::fromCents(5000, 'EUR');
         $quantity = Quantity::fromInt(2);
 
-        $cartItem = CartItem::create($id, $productId, $name, $unitPrice, $quantity);
+        $cartItem = CartItem::create($id, $this->cart, $productId, $name, $unitPrice, $quantity);
         $cartItem->increaseQuantity(Quantity::fromInt(3));
 
         $this->assertEquals(5, $cartItem->quantity()->value());
@@ -69,7 +79,7 @@ final class CartItemTest extends TestCase
         $unitPrice = Money::fromCents(5000, 'EUR');
         $quantity = Quantity::fromInt(2);
 
-        $cartItem = CartItem::create($id, $productId, $name, $unitPrice, $quantity);
+        $cartItem = CartItem::create($id, $this->cart, $productId, $name, $unitPrice, $quantity);
         $cartItem->updateQuantity(Quantity::fromInt(5));
 
         $this->assertEquals(5, $cartItem->quantity()->value());
@@ -83,6 +93,7 @@ final class CartItemTest extends TestCase
 
         $cartItem1 = CartItem::create(
             CartItemId::generate(),
+            $this->cart,
             $productId,
             $name,
             $unitPrice,
@@ -91,6 +102,7 @@ final class CartItemTest extends TestCase
 
         $cartItem2 = CartItem::create(
             CartItemId::generate(),
+            $this->cart,
             $productId,
             $name,
             $unitPrice,
@@ -107,6 +119,7 @@ final class CartItemTest extends TestCase
 
         $cartItem1 = CartItem::create(
             CartItemId::generate(),
+            $this->cart,
             ProductId::generate(),
             $name,
             $unitPrice,
@@ -115,6 +128,7 @@ final class CartItemTest extends TestCase
 
         $cartItem2 = CartItem::create(
             CartItemId::generate(),
+            $this->cart,
             ProductId::generate(),
             $name,
             $unitPrice,
@@ -128,6 +142,7 @@ final class CartItemTest extends TestCase
     {
         $cartItem = CartItem::create(
             CartItemId::generate(),
+            $this->cart,
             ProductId::generate(),
             ProductName::fromString('Gafas Siroko'),
             Money::fromCents(5000, 'EUR'),
@@ -142,6 +157,7 @@ final class CartItemTest extends TestCase
     {
         $cartItem = CartItem::create(
             CartItemId::generate(),
+            $this->cart,
             ProductId::generate(),
             ProductName::fromString('Gafas Siroko'),
             Money::fromCents(5000, 'EUR'),
@@ -156,6 +172,7 @@ final class CartItemTest extends TestCase
     {
         $cartItem = CartItem::create(
             CartItemId::generate(),
+            $this->cart,
             ProductId::generate(),
             ProductName::fromString('Gafas Siroko'),
             Money::fromCents(5000, 'EUR'),
@@ -178,6 +195,7 @@ final class CartItemTest extends TestCase
     {
         $cartItem = CartItem::create(
             CartItemId::generate(),
+            $this->cart,
             ProductId::generate(),
             ProductName::fromString('Gafas Siroko'),
             Money::fromCents(5000, 'EUR'),

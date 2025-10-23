@@ -15,18 +15,19 @@ final class CartItem
 {
     private function __construct(
         private readonly CartItemId $id,
+        private readonly Cart $cart,
         private readonly ProductId $productId,
         private readonly ProductName $name,
         private readonly Money $unitPrice,
         private Quantity $quantity,
         private readonly \DateTimeImmutable $createdAt,
         private \DateTimeImmutable $updatedAt,
-        private ?Cart $cart = null,
     ) {
     }
 
     public static function create(
         CartItemId $id,
+        Cart $cart,
         ProductId $productId,
         ProductName $name,
         Money $unitPrice,
@@ -34,7 +35,7 @@ final class CartItem
     ): self {
         $now = new \DateTimeImmutable();
 
-        return new self($id, $productId, $name, $unitPrice, $quantity, $now, $now);
+        return new self($id, $cart, $productId, $name, $unitPrice, $quantity, $now, $now);
     }
 
     public function id(): CartItemId
@@ -72,7 +73,7 @@ final class CartItem
         return $this->updatedAt;
     }
 
-    public function cart(): ?Cart
+    public function cart(): Cart
     {
         return $this->cart;
     }
