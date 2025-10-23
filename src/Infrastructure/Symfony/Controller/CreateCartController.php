@@ -16,7 +16,7 @@ use Symfony\Component\Routing\Attribute\Route;
 
 #[Route('/api/carts', name: 'api_carts_')]
 #[OA\Tag(name: 'Cart', description: 'Shopping cart operations')]
-final class CartController extends AbstractController
+final class CreateCartController extends AbstractController
 {
     public function __construct(
         private readonly CreateCartCommandHandler $createCartHandler,

@@ -6,11 +6,11 @@ namespace App\Tests\Unit\Application\Cart\Command;
 
 use App\Application\Cart\Command\CreateCartCommand;
 use App\Application\Cart\Command\CreateCartCommandHandler;
-use App\Application\Shared\EventDispatcherInterface;
 use App\Domain\Cart\Aggregate\Cart;
 use App\Domain\Cart\Event\CartCreated;
 use App\Domain\Cart\Repository\CartRepositoryInterface;
 use App\Domain\Cart\ValueObject\CartId;
+use App\Domain\Shared\Event\EventDispatcherInterface;
 use PHPUnit\Framework\TestCase;
 
 final class CreateCartCommandHandlerTest extends TestCase

@@ -6,27 +6,37 @@ doctrine:
         types:
             cart_id: App\Infrastructure\Persistence\Doctrine\Type\CartIdType
             user_id: App\Infrastructure\Persistence\Doctrine\Type\UserIdType
+            cart_item_id: App\Infrastructure\Persistence\Doctrine\Type\CartItemIdType
+            product_id: App\Infrastructure\Persistence\Doctrine\Type\ProductIdType
+            product_name: App\Infrastructure\Persistence\Doctrine\Type\ProductNameType
+            money: App\Infrastructure\Persistence\Doctrine\Type\MoneyType
+            quantity: App\Infrastructure\Persistence\Doctrine\Type\QuantityType
     orm:
         auto_generate_proxy_classes: true
         enable_lazy_ghost_objects: true
         report_fields_where_declared: true
         validate_xml_mapping: true
         naming_strategy: doctrine.orm.naming_strategy.underscore_number_aware
-        auto_mapping: true
+        auto_mapping: false
         mappings:
-            Cart:
+            CartAggregate:
                 type: xml
                 is_bundle: false
-                dir: '%kernel.project_dir%/src/Infrastructure/Persistence/Doctrine/Mapping'
+                dir: '%kernel.project_dir%/src/Infrastructure/Persistence/Doctrine/Mapping/Aggregate'
                 prefix: 'App\Domain\Cart\Aggregate'
-                alias: Cart
+                alias: CartAggregate
+            CartEntity:
+                type: xml
+                is_bundle: false
+                dir: '%kernel.project_dir%/src/Infrastructure/Persistence/Doctrine/Mapping/Entity'
+                prefix: 'App\Domain\Cart\Entity'
+                alias: CartEntity
         controller_resolver:
             auto_mapping: false
 
 when@test:
     doctrine:
         dbal:
-            # "TEST_TOKEN" is typically set by ParaTest
             dbname_suffix: '_test%env(default::TEST_TOKEN)%'
 
 when@prod:

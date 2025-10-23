@@ -2,9 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Application\Shared;
-
-use App\Domain\Shared\Event\DomainEvent;
+namespace App\Domain\Shared\Event;
 
 interface EventDispatcherInterface
 {

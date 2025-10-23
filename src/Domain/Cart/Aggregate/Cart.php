@@ -4,14 +4,21 @@ declare(strict_types=1);
 
 namespace App\Domain\Cart\Aggregate;
 
+use App\Domain\Cart\Entity\CartItem;
 use App\Domain\Cart\Event\CartCreated;
+use App\Domain\Cart\Event\CartItemAdded;
 use App\Domain\Cart\ValueObject\CartId;
+use App\Domain\Cart\ValueObject\CartItemId;
+use App\Domain\Cart\ValueObject\Money;
+use App\Domain\Cart\ValueObject\ProductId;
+use App\Domain\Cart\ValueObject\ProductName;
+use App\Domain\Cart\ValueObject\Quantity;
 use App\Domain\Cart\ValueObject\UserId;
 use App\Domain\Shared\Event\DomainEvent;
 
-final class Cart
+class Cart
 {
-    /** @var array<empty, empty> */
+    /** @var array<string, CartItem> */
     private array $items = [];
 
     /** @var array<int, DomainEvent> */
@@ -62,22 +69,105 @@ final class Cart
         return $this->expiresAt;
     }
 
+    public function addItem(
+        ProductId $productId,
+        ProductName $name,
+        Money $unitPrice,
+        Quantity $quantity,
+    ): void {
+        $productIdValue = $productId->value();
+
+        if (isset($this->items[$productIdValue])) {
+            $this->items[$productIdValue]->increaseQuantity($quantity);
+            $cartItemId = $this->items[$productIdValue]->id();
+        } else {
+            $cartItemId = CartItemId::generate();
+            $this->items[$productIdValue] = CartItem::create(
+                $cartItemId,
+                $this,
+                $productId,
+                $name,
+                $unitPrice,
+                $quantity
+            );
+        }
+
+        $this->record(
+            CartItemAdded::create(
+                $this->id,
+                $cartItemId,
+                $productId,
+                $name,
+                $unitPrice,
+                $quantity,
+                new \DateTimeImmutable()
+            )
+        );
+    }
+
     /**
-     * @return array<empty, empty>
+     * @return array<CartItem>
      */
     public function items(): array
     {
-        return $this->items;
+        return array_values($this->items);
+    }
+
+    public function total(): Money
+    {
+        if ($this->isEmpty()) {
+            return Money::fromCents(0, 'EUR');
+        }
+
+        $total = Money::fromCents(0, 'EUR');
+
+        foreach ($this->items as $item) {
+            $total = $total->add($item->subtotal());
+        }
+
+        return $total;
     }
 
     public function isEmpty(): bool
     {
-        return empty($this->items);
+        return 0 === count($this->items);
     }
 
     public function isAnonymous(): bool
     {
         return null === $this->userId;
+    }
+
+    /**
+     * Reconstruct Cart from persistence (used by infrastructure).
+     *
+     * @param array<CartItem> $items
+     */
+    public static function reconstruct(
+        CartId $id,
+        ?UserId $userId,
+        \DateTimeImmutable $createdAt,
+        \DateTimeImmutable $expiresAt,
+        array $items,
+    ): self {
+        $cart = new self($id, $userId, $createdAt, $expiresAt);
+
+        // Rebuild internal items structure indexed by productId
+        foreach ($items as $item) {
+            $cart->items[$item->productId()->value()] = $item;
+        }
+
+        return $cart;
+    }
+
+    public function totalItems(): int
+    {
+        $total = 0;
+        foreach ($this->items as $item) {
+            $total += $item->quantity()->value();
+        }
+
+        return $total;
     }
 
     /**
