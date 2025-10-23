@@ -9,6 +9,7 @@ use App\Domain\Cart\Entity\CartItem;
 use App\Domain\Cart\Event\CartCreated;
 use App\Domain\Cart\Event\CartItemAdded;
 use App\Domain\Cart\Event\CartItemQuantityUpdated;
+use App\Domain\Cart\Event\CartItemRemoved;
 use App\Domain\Cart\Exception\CartItemNotFoundException;
 use App\Domain\Cart\ValueObject\CartId;
 use App\Domain\Cart\ValueObject\CartItemId;
@@ -323,5 +324,113 @@ final class CartTest extends TestCase
         $events = $cart->pullDomainEvents();
         $this->assertCount(1, $events);
         $this->assertInstanceOf(CartItemQuantityUpdated::class, $events[0]);
+    }
+
+    public function testItCanRemoveAnItem(): void
+    {
+        $cartId = CartId::generate();
+        $cart = Cart::create($cartId);
+
+        // Add two items first
+        $product1Id = ProductId::fromString('550e8400-e29b-41d4-a716-446655440001');
+        $cart->addItem(
+            $product1Id,
+            ProductName::fromString('Product 1'),
+            Money::fromCents(2999, 'EUR'),
+            Quantity::fromInt(2)
+        );
+
+        $product2Id = ProductId::fromString('550e8400-e29b-41d4-a716-446655440002');
+        $cart->addItem(
+            $product2Id,
+            ProductName::fromString('Product 2'),
+            Money::fromCents(1999, 'EUR'),
+            Quantity::fromInt(1)
+        );
+
+        $this->assertCount(2, $cart->items());
+        $this->assertEquals(7997, $cart->total()->amountInCents()); // (2999*2) + (1999*1)
+
+        // Get the first item ID and remove it
+        $items = $cart->items();
+        $itemToRemoveId = $items[0]->id();
+
+        $cart->removeItem($itemToRemoveId);
+
+        // Verify item was removed
+        $this->assertCount(1, $cart->items());
+        $this->assertEquals(1999, $cart->total()->amountInCents()); // Only product 2 remains
+
+        // Verify the remaining item is the second one
+        $remainingItems = $cart->items();
+        $this->assertTrue($remainingItems[0]->productId()->equals($product2Id));
+    }
+
+    public function testRemoveItemThrowsExceptionWhenItemNotFound(): void
+    {
+        $cartId = CartId::generate();
+        $cart = Cart::create($cartId);
+
+        $nonExistentItemId = CartItemId::generate();
+
+        $this->expectException(CartItemNotFoundException::class);
+        $this->expectExceptionMessage('Cart item with id "'.$nonExistentItemId->value().'" was not found');
+
+        $cart->removeItem($nonExistentItemId);
+    }
+
+    public function testRemoveLastItemMakesCartEmpty(): void
+    {
+        $cartId = CartId::generate();
+        $cart = Cart::create($cartId);
+
+        // Add one item
+        $productId = ProductId::fromString('550e8400-e29b-41d4-a716-446655440001');
+        $cart->addItem(
+            $productId,
+            ProductName::fromString('Test Product'),
+            Money::fromCents(2999, 'EUR'),
+            Quantity::fromInt(1)
+        );
+
+        $this->assertFalse($cart->isEmpty());
+        $this->assertEquals(1, $cart->totalItems());
+
+        // Remove the only item
+        $items = $cart->items();
+        $cart->removeItem($items[0]->id());
+
+        // Verify cart is empty
+        $this->assertTrue($cart->isEmpty());
+        $this->assertEquals(0, $cart->totalItems());
+        $this->assertEquals(0, $cart->total()->amountInCents());
+        $this->assertCount(0, $cart->items());
+    }
+
+    public function testRemoveItemRecordsCartItemRemovedEvent(): void
+    {
+        $cartId = CartId::generate();
+        $cart = Cart::create($cartId);
+
+        // Add an item first
+        $productId = ProductId::fromString('550e8400-e29b-41d4-a716-446655440001');
+        $cart->addItem(
+            $productId,
+            ProductName::fromString('Test Product'),
+            Money::fromCents(2999, 'EUR'),
+            Quantity::fromInt(1)
+        );
+
+        // Clear events to focus on remove event
+        $cart->pullDomainEvents();
+
+        // Remove the item
+        $items = $cart->items();
+        $cart->removeItem($items[0]->id());
+
+        // Verify event was recorded
+        $events = $cart->pullDomainEvents();
+        $this->assertCount(1, $events);
+        $this->assertInstanceOf(CartItemRemoved::class, $events[0]);
     }
 }
