@@ -12,20 +12,17 @@ use App\Domain\Cart\Event\CartItemRemoved;
 use App\Domain\Cart\Exception\CartItemNotFoundException;
 use App\Domain\Cart\ValueObject\CartId;
 use App\Domain\Cart\ValueObject\CartItemId;
-use App\Domain\Shared\Event\DomainEvent;
+use App\Domain\Shared\Aggregate\AggregateRoot;
 use App\Domain\Shared\ValueObject\Money;
 use App\Domain\Shared\ValueObject\ProductId;
 use App\Domain\Shared\ValueObject\ProductName;
 use App\Domain\Shared\ValueObject\Quantity;
 use App\Domain\Shared\ValueObject\UserId;
 
-class Cart
+class Cart extends AggregateRoot
 {
     /** @var array<string, CartItem> */
     private array $items = [];
-
-    /** @var array<int, DomainEvent> */
-    private array $domainEvents = [];
 
     private function __construct(
         private readonly CartId $id,
@@ -230,21 +227,5 @@ class Cart
                 $itemToRemove->productId()
             )
         );
-    }
-
-    /**
-     * @return array<int, DomainEvent>
-     */
-    public function pullDomainEvents(): array
-    {
-        $events = $this->domainEvents;
-        $this->domainEvents = [];
-
-        return $events;
-    }
-
-    private function record(DomainEvent $event): void
-    {
-        $this->domainEvents[] = $event;
     }
 }

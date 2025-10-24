@@ -86,7 +86,7 @@ final class OrderTest extends TestCase
 
         $order = Order::create($orderId, $userId);
 
-        $events = $order->releaseEvents();
+        $events = $order->pullDomainEvents();
         $this->assertCount(1, $events);
         $this->assertInstanceOf(\App\Domain\Order\Event\OrderCreated::class, $events[0]);
     }
@@ -139,7 +139,7 @@ final class OrderTest extends TestCase
             []
         );
 
-        $events = $order->releaseEvents();
+        $events = $order->pullDomainEvents();
         $this->assertCount(0, $events);
     }
 
