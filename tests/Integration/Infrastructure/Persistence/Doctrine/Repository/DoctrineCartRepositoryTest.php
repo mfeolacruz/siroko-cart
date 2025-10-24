@@ -285,4 +285,83 @@ final class DoctrineCartRepositoryTest extends KernelTestCase
             $updatedItem->updatedAt()->getTimestamp()
         );
     }
+
+    public function testItRemovesCartItemCorrectly(): void
+    {
+        $cartId = CartId::generate();
+        $cart = Cart::create($cartId, UserId::generate());
+
+        // Add two items first
+        $product1Id = ProductId::generate();
+        $product1Name = ProductName::fromString('Product 1');
+        $cart->addItem($product1Id, $product1Name, Money::fromCents(2999, 'EUR'), Quantity::fromInt(2));
+
+        $product2Id = ProductId::generate();
+        $product2Name = ProductName::fromString('Product 2');
+        $cart->addItem($product2Id, $product2Name, Money::fromCents(1999, 'EUR'), Quantity::fromInt(1));
+
+        $this->repository->save($cart);
+
+        // Find the cart and get the first item ID to remove
+        $foundCart = $this->repository->findById($cartId);
+        $this->assertNotNull($foundCart);
+
+        $items = $foundCart->items();
+        $this->assertCount(2, $items);
+        $cartItemToRemoveId = $items[0]->id();
+
+        // Remove the item using the domain method
+        $foundCart->removeItem($cartItemToRemoveId);
+
+        $this->repository->save($foundCart);
+
+        // Verify the item was removed correctly
+        $updatedCart = $this->repository->findById($cartId);
+        $this->assertNotNull($updatedCart);
+
+        $remainingItems = $updatedCart->items();
+        $this->assertCount(1, $remainingItems);
+
+        // Verify the remaining item is the second one
+        $remainingItem = $remainingItems[0];
+        $this->assertTrue($remainingItem->productId()->equals($product2Id));
+        $this->assertEquals('Product 2', $remainingItem->name()->value());
+        $this->assertEquals(1999, $remainingItem->unitPrice()->amountInCents());
+        $this->assertEquals(1, $remainingItem->quantity()->value());
+
+        // Verify cart total updated correctly
+        $this->assertEquals(1999, $updatedCart->total()->amountInCents());
+    }
+
+    public function testItRemovesAllItemsFromCart(): void
+    {
+        $cartId = CartId::generate();
+        $cart = Cart::create($cartId);
+
+        // Add one item
+        $productId = ProductId::generate();
+        $productName = ProductName::fromString('Single Product');
+        $cart->addItem($productId, $productName, Money::fromCents(5999, 'EUR'), Quantity::fromInt(1));
+
+        $this->repository->save($cart);
+
+        // Find the cart and remove the only item
+        $foundCart = $this->repository->findById($cartId);
+        $this->assertNotNull($foundCart);
+
+        $items = $foundCart->items();
+        $this->assertCount(1, $items);
+        $cartItemId = $items[0]->id();
+
+        $foundCart->removeItem($cartItemId);
+
+        $this->repository->save($foundCart);
+
+        // Verify the cart is now empty
+        $emptyCart = $this->repository->findById($cartId);
+        $this->assertNotNull($emptyCart);
+        $this->assertTrue($emptyCart->isEmpty());
+        $this->assertCount(0, $emptyCart->items());
+        $this->assertEquals(0, $emptyCart->total()->amountInCents());
+    }
 }
