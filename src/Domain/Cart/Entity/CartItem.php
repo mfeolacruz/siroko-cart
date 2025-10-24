@@ -6,10 +6,10 @@ namespace App\Domain\Cart\Entity;
 
 use App\Domain\Cart\Aggregate\Cart;
 use App\Domain\Cart\ValueObject\CartItemId;
-use App\Domain\Cart\ValueObject\Money;
-use App\Domain\Cart\ValueObject\ProductId;
-use App\Domain\Cart\ValueObject\ProductName;
-use App\Domain\Cart\ValueObject\Quantity;
+use App\Domain\Shared\ValueObject\Money;
+use App\Domain\Shared\ValueObject\ProductId;
+use App\Domain\Shared\ValueObject\ProductName;
+use App\Domain\Shared\ValueObject\Quantity;
 
 final class CartItem
 {

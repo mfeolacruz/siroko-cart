@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Domain\Cart\ValueObject;
+namespace App\Domain\Shared\ValueObject;
 
 final readonly class ProductName
 {

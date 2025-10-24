@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace App\Tests\Unit\Domain\Cart\ValueObject;
+namespace App\tests\Unit\Domain\Shared\ValueObject;
 
-use App\Domain\Cart\ValueObject\Quantity;
+use App\Domain\Shared\ValueObject\Quantity;
 use PHPUnit\Framework\TestCase;
 
 final class QuantityTest extends TestCase

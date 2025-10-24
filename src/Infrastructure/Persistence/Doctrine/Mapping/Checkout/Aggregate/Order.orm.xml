@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<doctrine-mapping xmlns="http://doctrine-project.org/schemas/orm/doctrine-mapping"
+                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                  xsi:schemaLocation="http://doctrine-project.org/schemas/orm/doctrine-mapping
+                  https://www.doctrine-project.org/schemas/orm/doctrine-mapping.xsd">
+
+    <entity name="App\Domain\Checkout\Aggregate\Order" table="orders">
+        <id name="id" type="order_id" column="id"/>
+
+        <field name="userId" type="user_id" column="user_id" nullable="true"/>
+        <field name="status" type="order_status" column="status" nullable="false"/>
+        <field name="total" type="money" column="total" nullable="false"/>
+        <field name="createdAt" type="datetime_immutable" column="created_at" nullable="false"/>
+        <field name="updatedAt" type="datetime_immutable" column="updated_at" nullable="false"/>
+
+        <!-- items are NOT mapped here - managed manually in repository -->
+    </entity>
+
+</doctrine-mapping>

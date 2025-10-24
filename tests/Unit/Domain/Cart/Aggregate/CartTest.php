@@ -13,11 +13,11 @@ use App\Domain\Cart\Event\CartItemRemoved;
 use App\Domain\Cart\Exception\CartItemNotFoundException;
 use App\Domain\Cart\ValueObject\CartId;
 use App\Domain\Cart\ValueObject\CartItemId;
-use App\Domain\Cart\ValueObject\Money;
-use App\Domain\Cart\ValueObject\ProductId;
-use App\Domain\Cart\ValueObject\ProductName;
-use App\Domain\Cart\ValueObject\Quantity;
-use App\Domain\Cart\ValueObject\UserId;
+use App\Domain\Shared\ValueObject\Money;
+use App\Domain\Shared\ValueObject\ProductId;
+use App\Domain\Shared\ValueObject\ProductName;
+use App\Domain\Shared\ValueObject\Quantity;
+use App\Domain\Shared\ValueObject\UserId;
 use PHPUnit\Framework\TestCase;
 
 final class CartTest extends TestCase
@@ -432,5 +432,37 @@ final class CartTest extends TestCase
         $events = $cart->pullDomainEvents();
         $this->assertCount(1, $events);
         $this->assertInstanceOf(CartItemRemoved::class, $events[0]);
+    }
+
+    public function testItCanForceExpiration(): void
+    {
+        $cartId = CartId::generate();
+        $cart = Cart::create($cartId);
+
+        // Verify initial expiration is 7 days from creation
+        $createdAt = $cart->createdAt();
+        $expectedInitialExpiration = $createdAt->modify('+7 days');
+        $this->assertEquals($expectedInitialExpiration, $cart->expiresAt());
+
+        // Add some items to the cart
+        $productId = ProductId::fromString('550e8400-e29b-41d4-a716-446655440001');
+        $cart->addItem(
+            $productId,
+            ProductName::fromString('Test Product'),
+            Money::fromCents(2999, 'EUR'),
+            Quantity::fromInt(1)
+        );
+
+        // Force expiration of the cart
+        $beforeExpiration = new \DateTimeImmutable();
+        $cart->forceExpiration();
+        $afterExpiration = new \DateTimeImmutable();
+
+        // Verify the cart is now expired (expiration set to current time)
+        $this->assertGreaterThanOrEqual($beforeExpiration, $cart->expiresAt());
+        $this->assertLessThanOrEqual($afterExpiration, $cart->expiresAt());
+
+        // Verify cart is considered expired
+        $this->assertTrue($cart->isExpired());
     }
 }

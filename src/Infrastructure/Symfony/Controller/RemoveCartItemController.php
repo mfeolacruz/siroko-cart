@@ -16,7 +16,6 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
-#[OA\Tag(name: 'Cart', description: 'Shopping cart operations')]
 final class RemoveCartItemController extends AbstractController
 {
     public function __construct(
@@ -28,8 +27,8 @@ final class RemoveCartItemController extends AbstractController
     #[Route('/api/carts/{cartId}/items/{cartItemId}', name: 'remove_cart_item', methods: ['DELETE'])]
     #[OA\Delete(
         path: '/api/carts/{cartId}/items/{cartItemId}',
-        summary: 'Remove item from shopping cart',
-        description: 'Removes an item from an existing shopping cart.',
+        summary: 'Eliminar artículo del carrito de compras',
+        description: 'Elimina un artículo de un carrito de compras existente.',
         tags: ['Cart'],
         parameters: [
             new OA\Parameter(

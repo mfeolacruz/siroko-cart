@@ -12,33 +12,33 @@ use App\Domain\Cart\Event\CartItemRemoved;
 use App\Domain\Cart\Exception\CartItemNotFoundException;
 use App\Domain\Cart\ValueObject\CartId;
 use App\Domain\Cart\ValueObject\CartItemId;
-use App\Domain\Cart\ValueObject\Money;
-use App\Domain\Cart\ValueObject\ProductId;
-use App\Domain\Cart\ValueObject\ProductName;
-use App\Domain\Cart\ValueObject\Quantity;
-use App\Domain\Cart\ValueObject\UserId;
-use App\Domain\Shared\Event\DomainEvent;
+use App\Domain\Shared\Aggregate\AggregateRoot;
+use App\Domain\Shared\ValueObject\Money;
+use App\Domain\Shared\ValueObject\ProductId;
+use App\Domain\Shared\ValueObject\ProductName;
+use App\Domain\Shared\ValueObject\Quantity;
+use App\Domain\Shared\ValueObject\UserId;
 
-class Cart
+class Cart extends AggregateRoot
 {
+    private const DEFAULT_EXPIRATION_DAYS = 7;
+    private const DEFAULT_CURRENCY = 'EUR';
+
     /** @var array<string, CartItem> */
     private array $items = [];
-
-    /** @var array<int, DomainEvent> */
-    private array $domainEvents = [];
 
     private function __construct(
         private readonly CartId $id,
         private readonly ?UserId $userId,
         private readonly \DateTimeImmutable $createdAt,
-        private readonly \DateTimeImmutable $expiresAt,
+        private \DateTimeImmutable $expiresAt,
     ) {
     }
 
     public static function create(CartId $id, ?UserId $userId = null): self
     {
         $createdAt = new \DateTimeImmutable();
-        $expiresAt = $createdAt->modify('+7 days');
+        $expiresAt = $createdAt->modify('+'.self::DEFAULT_EXPIRATION_DAYS.' days');
 
         $cart = new self(
             $id,
@@ -119,10 +119,10 @@ class Cart
     public function total(): Money
     {
         if ($this->isEmpty()) {
-            return Money::fromCents(0, 'EUR');
+            return Money::fromCents(0, self::DEFAULT_CURRENCY);
         }
 
-        $total = Money::fromCents(0, 'EUR');
+        $total = Money::fromCents(0, self::DEFAULT_CURRENCY);
 
         foreach ($this->items as $item) {
             $total = $total->add($item->subtotal());
@@ -232,19 +232,13 @@ class Cart
         );
     }
 
-    /**
-     * @return array<int, DomainEvent>
-     */
-    public function pullDomainEvents(): array
+    public function forceExpiration(): void
     {
-        $events = $this->domainEvents;
-        $this->domainEvents = [];
-
-        return $events;
+        $this->expiresAt = new \DateTimeImmutable();
     }
 
-    private function record(DomainEvent $event): void
+    public function isExpired(): bool
     {
-        $this->domainEvents[] = $event;
+        return $this->expiresAt <= new \DateTimeImmutable();
     }
 }

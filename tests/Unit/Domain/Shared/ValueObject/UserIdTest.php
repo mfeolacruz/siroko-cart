@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace App\Tests\Unit\Domain\Cart\ValueObject;
+namespace App\tests\Unit\Domain\Shared\ValueObject;
 
-use App\Domain\Cart\ValueObject\UserId;
+use App\Domain\Shared\ValueObject\UserId;
 use PHPUnit\Framework\TestCase;
 
 final class UserIdTest extends TestCase

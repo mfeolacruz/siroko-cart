@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace App\Tests\Unit\Domain\Cart\ValueObject;
+namespace App\tests\Unit\Domain\Shared\ValueObject;
 
-use App\Domain\Cart\ValueObject\Money;
+use App\Domain\Shared\ValueObject\Money;
 use PHPUnit\Framework\TestCase;
 
 final class MoneyTest extends TestCase

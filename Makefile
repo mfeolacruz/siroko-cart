@@ -1,4 +1,4 @@
-.PHONY: help setup up down build restart logs shell composer test test-unit test-integration test-functional test-coverage console phpstan cs-check cs-fix db-create db-migrate db-test-migrate db-reset
+.PHONY: help setup up down build restart logs shell composer test test-unit test-integration test-functional test-coverage test-coverage-html test-coverage-console console phpstan cs-check cs-fix db-create db-migrate db-test-migrate db-reset benchmark benchmark-quick benchmark-load
 
 # Load environment variables from .env file
 ifneq (,$(wildcard ./.env))
@@ -154,3 +154,32 @@ db-clean: ## Reset database
 	@docker compose exec database mysql -u root -p$${MYSQL_ROOT_PASSWORD} -e "CREATE DATABASE $${MYSQL_TEST_DATABASE};"
 	@docker compose exec database mysql -u root -p$${MYSQL_ROOT_PASSWORD} -e "GRANT ALL PRIVILEGES ON $${MYSQL_TEST_DATABASE}.* TO '$${MYSQL_USER}'@'%';"
 	@echo "✅ Database clean complete"
+
+# Performance testing
+benchmark: ## Run Apache Benchmark performance tests
+	@echo "🏃 Running performance benchmarks..."
+	@echo ""
+	@echo "📊 Testing cart creation endpoint..."
+	@docker compose exec php ab -n 100 -c 10 -H "Content-Type: application/json" -p /dev/null -T application/json http://nginx/api/carts || echo "⚠️  Basic endpoint test completed"
+	@echo ""
+	@echo "📊 Testing cart retrieval endpoint (requires existing cart)..."
+	@echo "Creating test cart first..."
+	@CART_ID=$$(docker compose exec php curl -s -X POST -H "Content-Type: application/json" -d '{}' http://nginx/api/carts | grep -o '"id":"[^"]*"' | cut -d'"' -f4) && \
+	if [ ! -z "$$CART_ID" ]; then \
+		echo "Testing GET /api/carts/$$CART_ID"; \
+		docker compose exec php ab -n 100 -c 10 http://nginx/api/carts/$$CART_ID; \
+	else \
+		echo "⚠️  Could not create test cart for GET benchmark"; \
+	fi
+	@echo ""
+	@echo "✅ Performance benchmarks completed"
+
+benchmark-quick: ## Run quick performance test (10 requests)
+	@echo "🏃 Running quick performance test..."
+	@docker compose exec php ab -n 10 -c 2 -H "Content-Type: application/json" -p /dev/null -T application/json http://nginx/api/carts
+	@echo "✅ Quick benchmark completed"
+
+benchmark-load: ## Run load test (1000 requests)
+	@echo "🏃 Running load test (1000 requests)..."
+	@docker compose exec php ab -n 1000 -c 50 -H "Content-Type: application/json" -p /dev/null -T application/json http://nginx/api/carts
+	@echo "✅ Load test completed"

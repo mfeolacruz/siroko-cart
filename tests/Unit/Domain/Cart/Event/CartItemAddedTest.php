@@ -7,11 +7,11 @@ namespace App\Tests\Unit\Domain\Cart\Event;
 use App\Domain\Cart\Event\CartItemAdded;
 use App\Domain\Cart\ValueObject\CartId;
 use App\Domain\Cart\ValueObject\CartItemId;
-use App\Domain\Cart\ValueObject\Money;
-use App\Domain\Cart\ValueObject\ProductId;
-use App\Domain\Cart\ValueObject\ProductName;
-use App\Domain\Cart\ValueObject\Quantity;
 use App\Domain\Shared\Event\DomainEvent;
+use App\Domain\Shared\ValueObject\Money;
+use App\Domain\Shared\ValueObject\ProductId;
+use App\Domain\Shared\ValueObject\ProductName;
+use App\Domain\Shared\ValueObject\Quantity;
 use PHPUnit\Framework\TestCase;
 
 final class CartItemAddedTest extends TestCase
