@@ -1,4 +1,4 @@
-.PHONY: help setup up down build restart logs shell composer test test-unit test-integration test-functional test-coverage console phpstan cs-check cs-fix db-create db-migrate db-test-migrate db-reset benchmark benchmark-quick benchmark-load
+.PHONY: help setup up down build restart logs shell composer test test-unit test-integration test-functional test-coverage test-coverage-html test-coverage-console console phpstan cs-check cs-fix db-create db-migrate db-test-migrate db-reset benchmark benchmark-quick benchmark-load
 
 # Load environment variables from .env file
 ifneq (,$(wildcard ./.env))
