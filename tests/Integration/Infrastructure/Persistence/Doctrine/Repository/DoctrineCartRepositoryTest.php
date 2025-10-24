@@ -364,4 +364,89 @@ final class DoctrineCartRepositoryTest extends KernelTestCase
         $this->assertCount(0, $emptyCart->items());
         $this->assertEquals(0, $emptyCart->total()->amountInCents());
     }
+
+    public function testItRetrievesCartWithCompleteDetails(): void
+    {
+        $cartId = CartId::generate();
+        $userId = UserId::generate();
+        $cart = Cart::create($cartId, $userId);
+
+        // Add multiple items with different prices and quantities
+        $product1Id = ProductId::generate();
+        $cart->addItem(
+            $product1Id,
+            ProductName::fromString('Premium Sunglasses'),
+            Money::fromCents(12999, 'EUR'),
+            Quantity::fromInt(1)
+        );
+
+        $product2Id = ProductId::generate();
+        $cart->addItem(
+            $product2Id,
+            ProductName::fromString('Sports Helmet'),
+            Money::fromCents(8999, 'EUR'),
+            Quantity::fromInt(2)
+        );
+
+        $this->repository->save($cart);
+
+        // Retrieve cart and verify all details
+        $retrievedCart = $this->repository->findById($cartId);
+
+        $this->assertNotNull($retrievedCart);
+        $this->assertTrue($retrievedCart->id()->equals($cartId));
+        $this->assertFalse($retrievedCart->isAnonymous());
+        $this->assertNotNull($retrievedCart->userId());
+        $this->assertTrue($retrievedCart->userId()->equals($userId));
+
+        // Verify items
+        $this->assertCount(2, $retrievedCart->items());
+        $this->assertEquals(3, $retrievedCart->totalItems()); // 1 + 2
+
+        // Verify total calculation: 129.99 + (89.99 * 2) = 309.97
+        $this->assertEquals(30997, $retrievedCart->total()->amountInCents());
+        $this->assertEquals('EUR', $retrievedCart->total()->currency());
+
+        // Verify individual items
+        $items = $retrievedCart->items();
+        $foundPremiumSunglasses = false;
+        $foundSportsHelmet = false;
+
+        foreach ($items as $item) {
+            if ($item->productId()->equals($product1Id)) {
+                $foundPremiumSunglasses = true;
+                $this->assertEquals('Premium Sunglasses', $item->name()->value());
+                $this->assertEquals(12999, $item->unitPrice()->amountInCents());
+                $this->assertEquals(1, $item->quantity()->value());
+                $this->assertEquals(12999, $item->subtotal()->amountInCents());
+            } elseif ($item->productId()->equals($product2Id)) {
+                $foundSportsHelmet = true;
+                $this->assertEquals('Sports Helmet', $item->name()->value());
+                $this->assertEquals(8999, $item->unitPrice()->amountInCents());
+                $this->assertEquals(2, $item->quantity()->value());
+                $this->assertEquals(17998, $item->subtotal()->amountInCents());
+            }
+        }
+
+        $this->assertTrue($foundPremiumSunglasses, 'Premium Sunglasses item not found');
+        $this->assertTrue($foundSportsHelmet, 'Sports Helmet item not found');
+    }
+
+    public function testItRetrievesEmptyCartCorrectly(): void
+    {
+        $cartId = CartId::generate();
+        $cart = Cart::create($cartId);
+
+        $this->repository->save($cart);
+
+        $retrievedCart = $this->repository->findById($cartId);
+
+        $this->assertNotNull($retrievedCart);
+        $this->assertTrue($retrievedCart->id()->equals($cartId));
+        $this->assertTrue($retrievedCart->isAnonymous());
+        $this->assertTrue($retrievedCart->isEmpty());
+        $this->assertCount(0, $retrievedCart->items());
+        $this->assertEquals(0, $retrievedCart->total()->amountInCents());
+        $this->assertEquals(0, $retrievedCart->totalItems());
+    }
 }
