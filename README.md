@@ -1,219 +1,147 @@
-# Siroko Cart API
+# API Siroko Cart
 
-Shopping cart and checkout API for Siroko e-commerce platform.
+API de carrito de compras y checkout para la plataforma e-commerce de Siroko. Implementa arquitectura hexagonal con principios DDD, proporcionando gestión de carrito y funcionalidad de checkout.
 
-## 🚀 Quick Start
+## 🚀 Inicio Rápido
 
-### Prerequisites
-- Docker & Docker Compose
-- Make (optional, but recommended)
-
-### Installation
-
-1. Clone the repository:
 ```bash
+# Clonar y configurar
 git clone https://github.com/mfeolacruz/siroko-cart.git
 cd siroko-cart
-```
-
-2. Run the setup command:
-```bash
 make setup
+
+# Ejecutar tests
+make test
 ```
 
-This will:
-- Create `.env` and `.env.test` files from examples
-- Build Docker containers
-- Start all services (PHP, Nginx, MySQL, phpMyAdmin)
-- Install Composer dependencies
-- Create databases
-- Run database migrations
-- Install Git hooks
+**Acceso a la API**: `http://localhost:8082` (puerto por defecto)
 
-3. Access the application:
-- Check the ports configured in your `.env` file (default: `NGINX_PORT=8082`, `PHPMYADMIN_PORT=8081`)
-- **API**: `http://localhost:${NGINX_PORT}`
-- **phpMyAdmin**: `http://localhost:${PHPMYADMIN_PORT}`
+## 📚 Especificación OpenAPI
 
-## 📝 Available Commands
+Documentación interactiva de la API disponible en:
+- **Swagger UI**: `http://localhost:8082/api/doc`
 
-### Container Management
-```bash
-make help          # Show all available commands
-make up            # Start containers
-make down          # Stop containers
-make build         # Build containers from scratch
-make restart       # Restart containers
-make shell         # Access PHP container shell
-make logs          # View all container logs
-make logs-php      # View PHP logs
-make logs-nginx    # View Nginx logs
-```
+## 🏗️ Modelado del Dominio
 
-### Development
-```bash
-make composer      # Install Composer dependencies
-make console       # Access Symfony console
-```
+**Arquitectura Hexagonal** con **Domain-Driven Design**:
 
-### Testing
-```bash
-make test                # Run all tests
-make test-unit           # Run unit tests only
-make test-integration    # Run integration tests only
-make test-functional     # Run functional tests only
-make test-coverage       # Generate coverage report (output in coverage/)
-```
-
-### Code Quality
-```bash
-make phpstan       # Run static analysis (PHPStan level 9)
-make cs-check      # Check code style (PSR-12)
-make cs-fix        # Fix code style automatically
-```
-
-### Database
-```bash
-make db-create         # Create main and test databases
-make db-migrate        # Run migrations on main database
-make db-test-migrate   # Run migrations on test database
-make db-reset          # Reset test database (drop, create, migrate)
-```
-
-## 🏗️ Architecture
-
-This project follows **Hexagonal Architecture** (Ports & Adapters) with **Domain-Driven Design** principles:
 ```
 src/
-├── Domain/          # Business logic, entities, value objects, domain events
-├── Application/     # Use cases, commands, queries (CQRS), DTOs
-└── Infrastructure/  # Framework, persistence, HTTP controllers, repositories
-    └── Symfony/     # Symfony-specific code (Kernel, config)
+├── Domain/          # Lógica de negocio, entidades, value objects
+│   ├── Cart/        # Agregado Cart, entidades, eventos
+│   ├── Checkout/    # Agregado Order, proceso de checkout  
+│   └── Shared/      # Value objects compartidos (Money, UUID)
+├── Application/     # Casos de uso, comandos, queries (CQRS)
+└── Infrastructure/  # Framework, persistencia, controladores
 ```
 
-### Testing Strategy
-```
-tests/
-├── Unit/            # Unit tests for domain logic (entities, VOs, services)
-├── Integration/     # Integration tests (repositories, database)
-└── Functional/      # Functional/E2E tests (API endpoints)
-```
+**Agregados Principales:**
+- **Cart**: Gestiona los artículos del carrito y operaciones
+- **Order**: Maneja el proceso de checkout y creación de pedidos
 
-## 🧪 Testing
+## 🛠️ Stack Tecnológico
 
-### Running Tests
-```bash
-# Run all test suites
-make test
-
-# Run specific test suite
-make test-unit           # Domain logic tests
-make test-integration    # Database/repository tests  
-make test-functional     # API endpoint tests
-
-# Generate HTML coverage report
-make test-coverage
-open coverage/index.html
-```
-
-### Test Database
-
-Tests use a separate database configured in `.env` (default: `siroko_cart_test`) that is automatically created during setup.
-
-To reset the test database:
-```bash
-make db-reset
-```
-
-## 🔍 Code Quality
-
-This project maintains high code quality standards:
-
-### Static Analysis (PHPStan Level 9)
-```bash
-make phpstan
-```
-
-### Code Style (PSR-12)
-```bash
-# Check code style
-make cs-check
-
-# Automatically fix code style issues
-make cs-fix
-```
-
-## 🔧 Git Hooks
-
-Git hooks are automatically installed during setup. They enforce:
-- ✅ PHPStan analysis (level 9) before each commit
-- ✅ Code style compliance (PSR-12)
-- ✅ Conventional commit message format
-
-### Manual Installation
-```bash
-./.githooks/install.sh
-```
-
-### Commit Message Format
-```bash
-<type>(<scope>): <subject>
-
-# Types: feat, fix, docs, style, refactor, test, chore, perf
-# Examples:
-feat: add cart creation endpoint
-fix(cart): resolve quantity calculation bug
-test: add unit tests for cart entity
-```
-
-## 🛠️ Technology Stack
-
-- **PHP 8.4** with PHP-FPM
-- **Symfony 7.3** (API skeleton)
-- **MySQL 8.0**
-- **Nginx** (web server)
+- **PHP 8.4** con PHP-FPM
+- **Symfony 7.3** (esqueleto API)
+- **MySQL 8.0** 
 - **Docker & Docker Compose**
-- **PHPUnit** (TDD with 3 test suites)
-- **PHPStan** (level 9 static analysis)
-- **PHP CS Fixer** (PSR-12 compliance)
-- **Xdebug** (debugging & coverage)
+- **PHPUnit** (3 suites de test: Unit, Integration, Functional)
+- **PHPStan** (nivel 9), **PHP CS Fixer** (PSR-12)
+- **Apache Benchmark** (testing de performance)
 
-## 📚 API Documentation
+## 📊 Performance y Cobertura
 
-Once the application is running, access the interactive API documentation at the configured port (check `.env` for `NGINX_PORT`):
+### Testing de Performance
+Integración con Apache Benchmark que proporciona métricas de rendimiento:
 
-- **Swagger UI**: `http://localhost:${NGINX_PORT}/api/doc`
+```bash
+make benchmark-quick    # Test rápido: ~39 req/seg, ~25ms promedio
+make benchmark          # Test estándar (100 requests, 10 concurrentes)
+make benchmark-load     # Test de carga (1000 requests, 50 concurrentes)
+```
 
-## 🗄️ Database Access
+**Performance Actual**: ~39 requests/segundo, ~25ms tiempo de respuesta promedio para creación de carrito.
 
-**phpMyAdmin** is available at the configured port (check `.env` for `PHPMYADMIN_PORT`):
-- URL: `http://localhost:${PHPMYADMIN_PORT}`
-- Server: Value of `MYSQL_HOST` in `.env` (default: `database`)
-- Username: Value of `MYSQL_USER` in `.env`
-- Password: Value of `MYSQL_PASSWORD` in `.env`
-- Databases:
-    - Value of `MYSQL_DATABASE` in `.env` (development)
-    - Value of `MYSQL_TEST_DATABASE` in `.env` (testing)
+### Cobertura de Tests
+```bash
+make test-coverage      # Reportes HTML + consola
+```
 
-## 🔐 Configuration
+**Cobertura Actual**: 82.65% líneas, 76.39% métodos, 221 tests en 3 suites
+- **Capa Domain**: 100% cobertura (lógica de negocio)
+- **Capa Application**: 100% cobertura (casos de uso) 
+- **Capa Infrastructure**: Cobertura parcial (tipos Doctrine, controladores)
 
-All configuration is managed through environment variables in `.env` file:
+## ⚠️ Deuda Técnica
 
-- **NGINX_PORT**: Nginx exposed port (default: 8082)
-- **PHPMYADMIN_PORT**: phpMyAdmin exposed port (default: 8081)
-- **MYSQL_DATABASE**: Main database name
-- **MYSQL_TEST_DATABASE**: Test database name
-- **MYSQL_USER**: Database user
-- **MYSQL_PASSWORD**: Database password
-- **MYSQL_HOST**: Database host (use `database` for Docker, `127.0.0.1` for local)
-- **MYSQL_PORT**: Database port (default: 3306)
+**Limitaciones conocidas de esta demo:**
 
-Copy `.env.example` to `.env` and customize as needed.
+1. **Textos Hardcodeados**: Los mensajes de error y validación no están internacionalizados
+2. **Gestión de Excepciones**: Respuestas HTTP básicas, podrían ser más sofisticadas
+3. **Auth & Seguridad**: No hay autenticación/autorización implementada
+4. **Persistencia**: Limpieza automática de carritos expirados no implementada
+5. **Eventos de Dominio**: Los eventos se disparan pero no hay handlers implementados
+6. **Versionado de API**: No implementado
+7. **Validación de Input**: Validación básica, podría ser más completa
 
-## 🤝 Contributing
+*En un entorno de producción, esto se abordaría con i18n apropiado, manejo completo de errores, capas de seguridad, trabajos en segundo plano, event sourcing y estrategias de versionado de API.*
 
-1. Create a feature branch from `develop`
-2. Follow conventional commits
-3. Ensure all tests pass (`make test`)
-4. Run code quality checks (`make phpstan` and `make cs-check`)
-5. Create a Pull Request to `develop`
+## 🔍 Calidad de Código
+
+### Análisis Estático
+**PHPStan nivel 9** garantiza código libre de errores:
+```bash
+make phpstan            # Análisis estático completo
+```
+
+### Estilo de Código
+**PHP CS Fixer** con estándar **PSR-12**:
+```bash
+make cs-check           # Verificar estilo de código
+make cs-fix             # Corregir automáticamente
+```
+
+### Git Hooks
+Se instalan automáticamente y validan antes de cada commit:
+- ✅ PHPStan (nivel 9)
+- ✅ Estilo de código (PSR-12)
+- ✅ Formato de commit (conventional commits)
+
+### Conventional Commits
+Formato estándar para mensajes de commit:
+```bash
+<tipo>(<scope>): <descripción>
+
+# Tipos: feat, fix, docs, style, refactor, test, chore, perf
+# Ejemplos:
+feat: añadir endpoint de creación de carrito
+fix(cart): resolver bug de cálculo de cantidad
+test: añadir tests unitarios para entidad cart
+```
+
+## 📝 Comandos de Desarrollo
+
+```bash
+# Comandos esenciales
+make setup              # Configuración inicial del proyecto
+make test               # Ejecutar todos los tests
+make up/down            # Iniciar/parar contenedores
+make shell              # Acceder al contenedor PHP
+make phpstan            # Análisis estático
+make cs-fix             # Corregir estilo de código
+```
+
+## 🔄 Git Flow
+
+**Estrategia de branching:**
+1. **main**: Código de producción estable
+2. **develop**: Rama de desarrollo principal
+3. **feature/***: Nuevas características desde develop
+4. **hotfix/***: Correcciones urgentes desde main
+
+**Flujo de trabajo:**
+1. Crear rama feature desde `develop`
+2. Seguir conventional commits
+3. Asegurar que pasen todos los tests (`make test`)
+4. Ejecutar validaciones de calidad (`make phpstan`, `make cs-check`)
+5. Crear Pull Request hacia `develop`
