@@ -15,7 +15,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
 #[Route('/api/carts', name: 'api_carts_')]
-#[OA\Tag(name: 'Cart', description: 'Shopping cart operations')]
+#[OA\Tag(name: 'Cart', description: 'Operaciones del carrito de compras')]
 final class CreateCartController extends AbstractController
 {
     public function __construct(
@@ -26,8 +26,8 @@ final class CreateCartController extends AbstractController
     #[Route('', name: 'create', methods: ['POST'])]
     #[OA\Post(
         path: '/api/carts',
-        summary: 'Create a new shopping cart',
-        description: 'Creates a new shopping cart, optionally associated with a user ID',
+        summary: 'Crear un nuevo carrito de compras',
+        description: 'Crea un nuevo carrito de compras, opcionalmente asociado con un ID de usuario',
         requestBody: new OA\RequestBody(
             required: false,
             content: new OA\JsonContent(
@@ -36,7 +36,7 @@ final class CreateCartController extends AbstractController
                         property: 'user_id',
                         type: 'string',
                         format: 'uuid',
-                        description: 'Optional user ID in UUID v4 format',
+                        description: 'ID de usuario opcional en formato UUID v4',
                         example: '550e8400-e29b-41d4-a716-446655440000', // UUID v4 válido
                         nullable: true
                     ),
@@ -48,21 +48,21 @@ final class CreateCartController extends AbstractController
         responses: [
             new OA\Response(
                 response: 201,
-                description: 'Cart created successfully',
+                description: 'Carrito creado exitosamente',
                 content: new OA\JsonContent(
                     properties: [
                         new OA\Property(
                             property: 'id',
                             type: 'string',
                             format: 'uuid',
-                            description: 'Unique cart identifier',
+                            description: 'Identificador único del carrito',
                             example: '987fcdeb-51a2-41d4-8901-23456789abcd' // UUID v4 válido
                         ),
                         new OA\Property(
                             property: 'user_id',
                             type: 'string',
                             format: 'uuid',
-                            description: 'User ID if provided',
+                            description: 'ID de usuario (si se proporciona)',
                             example: '550e8400-e29b-41d4-a716-446655440000', // UUID v4 válido
                             nullable: true
                         ),
@@ -70,7 +70,7 @@ final class CreateCartController extends AbstractController
                             property: 'created_at',
                             type: 'string',
                             format: 'date-time',
-                            description: 'Cart creation timestamp',
+                            description: 'Momento de creación del carrito',
                             example: '2025-10-23T00:43:05+00:00'
                         ),
                     ],
@@ -79,7 +79,7 @@ final class CreateCartController extends AbstractController
             ),
             new OA\Response(
                 response: 400,
-                description: 'Invalid request data (malformed JSON or invalid UUID v4 format)',
+                description: 'Datos de solicitud inválidos (JSON mal formado o formato UUID v4 inválido)',
                 content: new OA\JsonContent(
                     properties: [
                         new OA\Property(
@@ -87,7 +87,7 @@ final class CreateCartController extends AbstractController
                             type: 'object',
                             properties: [
                                 new OA\Property(property: 'code', type: 'string', example: 'invalid_uuid'),
-                                new OA\Property(property: 'message', type: 'string', example: 'Invalid UUID v4 format'),
+                                new OA\Property(property: 'message', type: 'string', example: 'Formato UUID v4 inválido'),
                             ]
                         ),
                     ],

@@ -25,11 +25,11 @@ final class UpdateCartItemController extends AbstractController
     ) {
     }
 
-    #[Route('/api/carts/{cartId}/items/{itemId}', name: 'update_cart_item', methods: ['PUT'])]
+    #[Route('/api/carts/{cartId}/items/{cartItemId}', name: 'update_cart_item', methods: ['PUT'])]
     #[OA\Put(
-        path: '/api/carts/{cartId}/items/{itemId}',
-        summary: 'Update cart item quantity',
-        description: 'Updates the quantity of a specific item in a shopping cart.',
+        path: '/api/carts/{cartId}/items/{cartItemId}',
+        summary: 'Actualizar cantidad de artículo del carrito',
+        description: 'Actualiza la cantidad de un artículo específico en un carrito de compras.',
         requestBody: new OA\RequestBody(
             required: true,
             content: new OA\JsonContent(
@@ -57,7 +57,7 @@ final class UpdateCartItemController extends AbstractController
                 example: '550e8400-e29b-41d4-a716-446655440000'
             ),
             new OA\Parameter(
-                name: 'itemId',
+                name: 'cartItemId',
                 description: 'Cart item ID in UUID v4 format',
                 in: 'path',
                 required: true,
@@ -133,7 +133,7 @@ final class UpdateCartItemController extends AbstractController
             ),
         ]
     )]
-    public function __invoke(Request $request, string $cartId, string $itemId): JsonResponse
+    public function __invoke(Request $request, string $cartId, string $cartItemId): JsonResponse
     {
         try {
             $content = $request->getContent();
@@ -170,7 +170,7 @@ final class UpdateCartItemController extends AbstractController
 
             $command = new UpdateCartItemQuantityCommand(
                 cartId: $cartId,
-                cartItemId: $itemId,
+                cartItemId: $cartItemId,
                 quantity: $data['quantity']
             );
 

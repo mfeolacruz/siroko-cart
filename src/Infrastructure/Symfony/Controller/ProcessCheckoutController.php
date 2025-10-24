@@ -14,7 +14,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
 #[Route('/api/carts', name: 'api_carts_')]
-#[OA\Tag(name: 'Checkout', description: 'Cart checkout operations')]
+#[OA\Tag(name: 'Checkout', description: 'Operaciones de pago y finalización de compra')]
 final class ProcessCheckoutController extends AbstractController
 {
     public function __construct(
@@ -25,12 +25,12 @@ final class ProcessCheckoutController extends AbstractController
     #[Route('/{cartId}/checkout', name: 'checkout', methods: ['POST'])]
     #[OA\Post(
         path: '/api/carts/{cartId}/checkout',
-        summary: 'Process cart checkout and create order',
-        description: 'Processes the checkout for a cart, creating a persistent order with all cart items and marking the cart as expired',
+        summary: 'Procesar pago del carrito y crear orden',
+        description: 'Procesa el pago de un carrito, creando una orden persistente con todos los artículos del carrito y marcando el carrito como expirado',
         parameters: [
             new OA\Parameter(
                 name: 'cartId',
-                description: 'Unique cart identifier',
+                description: 'Identificador único del carrito',
                 in: 'path',
                 required: true,
                 schema: new OA\Schema(
@@ -44,21 +44,21 @@ final class ProcessCheckoutController extends AbstractController
         responses: [
             new OA\Response(
                 response: 201,
-                description: 'Checkout processed successfully, order created',
+                description: 'Pago procesado exitosamente, orden creada',
                 content: new OA\JsonContent(
                     properties: [
                         new OA\Property(
                             property: 'order_id',
                             type: 'string',
                             format: 'uuid',
-                            description: 'Unique order identifier',
+                            description: 'Identificador único de la orden',
                             example: '123e4567-e89b-12d3-a456-426614174000'
                         ),
                         new OA\Property(
                             property: 'message',
                             type: 'string',
-                            description: 'Success message',
-                            example: 'Order created successfully'
+                            description: 'Mensaje de éxito',
+                            example: 'Orden creada exitosamente'
                         ),
                     ],
                     type: 'object'
@@ -66,7 +66,7 @@ final class ProcessCheckoutController extends AbstractController
             ),
             new OA\Response(
                 response: 400,
-                description: 'Invalid request - Cart is empty or invalid cart ID',
+                description: 'Solicitud inválida - El carrito está vacío o ID de carrito inválido',
                 content: new OA\JsonContent(
                     properties: [
                         new OA\Property(
@@ -74,7 +74,7 @@ final class ProcessCheckoutController extends AbstractController
                             type: 'object',
                             properties: [
                                 new OA\Property(property: 'code', type: 'string', example: 'empty_cart'),
-                                new OA\Property(property: 'message', type: 'string', example: 'Cannot checkout empty cart'),
+                                new OA\Property(property: 'message', type: 'string', example: 'No se puede procesar pago de carrito vacío'),
                             ]
                         ),
                     ],
@@ -83,7 +83,7 @@ final class ProcessCheckoutController extends AbstractController
             ),
             new OA\Response(
                 response: 404,
-                description: 'Cart not found',
+                description: 'Carrito no encontrado',
                 content: new OA\JsonContent(
                     properties: [
                         new OA\Property(
@@ -91,7 +91,7 @@ final class ProcessCheckoutController extends AbstractController
                             type: 'object',
                             properties: [
                                 new OA\Property(property: 'code', type: 'string', example: 'cart_not_found'),
-                                new OA\Property(property: 'message', type: 'string', example: 'Cart not found'),
+                                new OA\Property(property: 'message', type: 'string', example: 'Carrito no encontrado'),
                             ]
                         ),
                     ],

@@ -15,7 +15,6 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
-#[OA\Tag(name: 'Cart', description: 'Shopping cart operations')]
 final class AddCartItemController extends AbstractController
 {
     public function __construct(
@@ -27,8 +26,8 @@ final class AddCartItemController extends AbstractController
     #[Route('/api/carts/{cartId}/items', name: 'add_cart_item', methods: ['POST'])]
     #[OA\Post(
         path: '/api/carts/{cartId}/items',
-        summary: 'Add item to shopping cart',
-        description: 'Adds a new item to an existing shopping cart. If the same product already exists, the quantities will be combined.',
+        summary: 'Agregar artículo al carrito de compras',
+        description: 'Agrega un nuevo artículo a un carrito de compras existente. Si el mismo producto ya existe, las cantidades se combinarán.',
         requestBody: new OA\RequestBody(
             required: true,
             content: new OA\JsonContent(
@@ -37,33 +36,33 @@ final class AddCartItemController extends AbstractController
                         property: 'product_id',
                         type: 'string',
                         format: 'uuid',
-                        description: 'Product ID in UUID v4 format',
+                        description: 'ID del producto en formato UUID v4',
                         example: '550e8400-e29b-41d4-a716-446655440001'
                     ),
                     new OA\Property(
                         property: 'product_name',
                         type: 'string',
-                        description: 'Product name',
+                        description: 'Nombre del producto',
                         example: 'Siroko Cycling Glasses'
                     ),
                     new OA\Property(
                         property: 'unit_price',
                         type: 'number',
                         format: 'float',
-                        description: 'Unit price of the product',
+                        description: 'Precio unitario del producto',
                         example: 99.99
                     ),
                     new OA\Property(
                         property: 'currency',
                         type: 'string',
-                        description: 'Currency code (optional, defaults to EUR)',
+                        description: 'Código de moneda (opcional, por defecto EUR)',
                         example: 'EUR',
                         nullable: true
                     ),
                     new OA\Property(
                         property: 'quantity',
                         type: 'integer',
-                        description: 'Quantity to add (must be positive)',
+                        description: 'Cantidad a agregar (debe ser positiva)',
                         example: 2
                     ),
                 ],
@@ -75,7 +74,7 @@ final class AddCartItemController extends AbstractController
         parameters: [
             new OA\Parameter(
                 name: 'cartId',
-                description: 'Cart ID in UUID v4 format',
+                description: 'ID del carrito en formato UUID v4',
                 in: 'path',
                 required: true,
                 schema: new OA\Schema(
@@ -88,79 +87,79 @@ final class AddCartItemController extends AbstractController
         responses: [
             new OA\Response(
                 response: 200,
-                description: 'Item added successfully to cart',
+                description: 'Artículo agregado exitosamente al carrito',
                 content: new OA\JsonContent(
                     properties: [
                         new OA\Property(
                             property: 'cart_id',
                             type: 'string',
                             format: 'uuid',
-                            description: 'Cart identifier',
+                            description: 'Identificador del carrito',
                             example: '987fcdeb-51a2-41d4-8901-23456789abcd'
                         ),
                         new OA\Property(
                             property: 'total',
                             type: 'number',
                             format: 'float',
-                            description: 'Total cart amount',
+                            description: 'Monto total del carrito',
                             example: 199.98
                         ),
                         new OA\Property(
                             property: 'currency',
                             type: 'string',
-                            description: 'Currency code',
+                            description: 'Código de moneda',
                             example: 'EUR'
                         ),
                         new OA\Property(
                             property: 'items',
                             type: 'array',
-                            description: 'List of cart items',
+                            description: 'Lista de artículos del carrito',
                             items: new OA\Items(
                                 properties: [
                                     new OA\Property(
                                         property: 'id',
                                         type: 'string',
                                         format: 'uuid',
-                                        description: 'Cart item identifier',
+                                        description: 'Identificador del artículo del carrito',
                                         example: '123e4567-e89b-12d3-a456-426614174000'
                                     ),
                                     new OA\Property(
                                         property: 'product_id',
                                         type: 'string',
                                         format: 'uuid',
-                                        description: 'Product identifier',
+                                        description: 'Identificador del producto',
                                         example: '550e8400-e29b-41d4-a716-446655440001'
                                     ),
                                     new OA\Property(
                                         property: 'product_name',
                                         type: 'string',
-                                        description: 'Product name',
+                                        description: 'Nombre del producto',
                                         example: 'Siroko Cycling Glasses'
                                     ),
                                     new OA\Property(
                                         property: 'unit_price',
                                         type: 'number',
                                         format: 'float',
-                                        description: 'Unit price',
+                                        description: 'Precio unitario',
                                         example: 99.99
                                     ),
                                     new OA\Property(
                                         property: 'currency',
                                         type: 'string',
-                                        description: 'Currency code',
+                                        description: 'Código de moneda',
                                         example: 'EUR'
                                     ),
                                     new OA\Property(
                                         property: 'quantity',
                                         type: 'integer',
-                                        description: 'Quantity in cart',
+                                        description: 'Cantidad en el carrito',
                                         example: 2
                                     ),
                                     new OA\Property(
                                         property: 'subtotal',
                                         type: 'number',
                                         format: 'float',
-                                        description: 'Subtotal for this item',
+                                        description: 'Subtotal para este artículo',
                                         example: 199.98
                                     ),
                                 ],
@@ -173,13 +172,13 @@ final class AddCartItemController extends AbstractController
             ),
             new OA\Response(
                 response: 400,
-                description: 'Invalid request data',
+                description: 'Datos de solicitud inválidos',
                 content: new OA\JsonContent(
                     properties: [
                         new OA\Property(
                             property: 'error',
                             type: 'string',
-                            example: 'Missing required fields: product_id, product_name, unit_price, quantity'
+                            example: 'Faltan campos requeridos: product_id, product_name, unit_price, quantity'
                         ),
                     ],
                     type: 'object'
@@ -187,13 +186,13 @@ final class AddCartItemController extends AbstractController
             ),
             new OA\Response(
                 response: 404,
-                description: 'Cart not found',
+                description: 'Carrito no encontrado',
                 content: new OA\JsonContent(
                     properties: [
                         new OA\Property(
                             property: 'error',
                             type: 'string',
-                            example: 'Cart not found'
+                            example: 'Carrito no encontrado'
                         ),
                     ],
                     type: 'object'
