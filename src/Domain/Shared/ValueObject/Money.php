@@ -6,6 +6,8 @@ namespace App\Domain\Shared\ValueObject;
 
 final readonly class Money
 {
+    private const CENTS_PER_UNIT = 100;
+
     private function __construct(
         private int $amountInCents,
         private string $currency,
@@ -22,7 +24,7 @@ final readonly class Money
 
     public static function fromFloat(float $amount, string $currency = 'EUR'): self
     {
-        return new self((int) round($amount * 100), $currency);
+        return new self((int) round($amount * self::CENTS_PER_UNIT), $currency);
     }
 
     public function amountInCents(): int
@@ -32,7 +34,7 @@ final readonly class Money
 
     public function amount(): float
     {
-        return $this->amountInCents / 100;
+        return $this->amountInCents / self::CENTS_PER_UNIT;
     }
 
     public function currency(): string

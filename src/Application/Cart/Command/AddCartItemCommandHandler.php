@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Application\Cart\Command;
 
+use App\Domain\Cart\Exception\CartNotFoundException;
 use App\Domain\Cart\Repository\CartRepositoryInterface;
 use App\Domain\Cart\ValueObject\CartId;
 use App\Domain\Shared\Event\EventDispatcherInterface;
@@ -27,7 +28,7 @@ final readonly class AddCartItemCommandHandler
         $cart = $this->cartRepository->findById($cartId);
 
         if (null === $cart) {
-            throw new \RuntimeException('Cart not found');
+            throw CartNotFoundException::withId($cartId);
         }
 
         $productId = ProductId::fromString($command->productId);

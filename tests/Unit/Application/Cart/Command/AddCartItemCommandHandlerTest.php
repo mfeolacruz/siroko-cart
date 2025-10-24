@@ -7,6 +7,7 @@ namespace App\Tests\Unit\Application\Cart\Command;
 use App\Application\Cart\Command\AddCartItemCommand;
 use App\Application\Cart\Command\AddCartItemCommandHandler;
 use App\Domain\Cart\Aggregate\Cart;
+use App\Domain\Cart\Exception\CartNotFoundException;
 use App\Domain\Cart\Repository\CartRepositoryInterface;
 use App\Domain\Cart\ValueObject\CartId;
 use App\Domain\Shared\Event\EventDispatcherInterface;
@@ -84,8 +85,7 @@ final class AddCartItemCommandHandlerTest extends TestCase
             ->method('findById')
             ->willReturn(null);
 
-        $this->expectException(\RuntimeException::class);
-        $this->expectExceptionMessage('Cart not found');
+        $this->expectException(CartNotFoundException::class);
 
         $this->handler->handle($command);
     }

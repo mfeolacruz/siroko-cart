@@ -8,6 +8,7 @@ use App\Domain\Cart\Aggregate\Cart;
 use App\Domain\Cart\Entity\CartItem;
 use App\Domain\Cart\Repository\CartRepositoryInterface;
 use App\Domain\Cart\ValueObject\CartId;
+use App\Domain\Cart\ValueObject\CartItemId;
 use Doctrine\ORM\EntityManagerInterface;
 
 final readonly class DoctrineCartRepository implements CartRepositoryInterface
@@ -19,35 +20,61 @@ final readonly class DoctrineCartRepository implements CartRepositoryInterface
 
     public function save(Cart $cart): void
     {
-        // Check if cart exists
-        $exists = $this->entityManager
-            ->createQuery('SELECT COUNT(c.id) FROM '.Cart::class.' c WHERE c.id = :cartId')
-            ->setParameter('cartId', $cart->id())
-            ->getSingleScalarResult();
+        $managedCart = $this->getOrCreateManagedCart($cart);
+        $this->synchronizeCartItems($cart, $managedCart);
+        $this->updateCartFields($cart, $managedCart);
+        $this->entityManager->flush();
+    }
 
-        $managedCart = null;
-
-        if (0 === (int) $exists) {
-            // Cart doesn't exist, persist it first
-            $this->entityManager->persist($cart);
-            $this->entityManager->flush(); // Flush to make it managed
-            $managedCart = $cart; // Now it's managed
-        } else {
-            // Cart exists, get managed instance by clearing first and then finding
-            $this->entityManager->clear(); // Clear identity map to avoid conflicts
-            $managedCart = $this->entityManager->find(Cart::class, $cart->id());
-            if (null === $managedCart) {
-                throw new \RuntimeException('Cart should exist but was not found');
-            }
+    private function getOrCreateManagedCart(Cart $cart): Cart
+    {
+        if ($this->cartExists($cart->id())) {
+            return $this->getManagedCart($cart);
         }
 
-        // Get current item IDs from the domain cart
-        $currentItemIds = array_map(
-            fn ($item) => $item->id(),
-            $cart->items()
-        );
+        return $this->persistNewCart($cart);
+    }
 
-        // Remove items that are no longer in the cart
+    private function cartExists(CartId $cartId): bool
+    {
+        $exists = $this->entityManager
+            ->createQuery('SELECT COUNT(c.id) FROM '.Cart::class.' c WHERE c.id = :cartId')
+            ->setParameter('cartId', $cartId)
+            ->getSingleScalarResult();
+
+        return (int) $exists > 0;
+    }
+
+    private function persistNewCart(Cart $cart): Cart
+    {
+        $this->entityManager->persist($cart);
+        $this->entityManager->flush();
+
+        return $cart;
+    }
+
+    private function getManagedCart(Cart $cart): Cart
+    {
+        $this->entityManager->clear();
+        $managedCart = $this->entityManager->find(Cart::class, $cart->id());
+
+        if (null === $managedCart) {
+            throw new \RuntimeException('Cart should exist but was not found');
+        }
+
+        return $managedCart;
+    }
+
+    private function synchronizeCartItems(Cart $domainCart, Cart $managedCart): void
+    {
+        $this->removeStaleCartItems($domainCart, $managedCart);
+        $this->persistOrUpdateCartItems($domainCart, $managedCart);
+    }
+
+    private function removeStaleCartItems(Cart $domainCart, Cart $managedCart): void
+    {
+        $currentItemIds = array_map(fn ($item) => $item->id(), $domainCart->items());
+
         if (!empty($currentItemIds)) {
             $this->entityManager
                 ->createQuery('DELETE FROM '.CartItem::class.' ci WHERE ci.cart = :cartId AND ci.id NOT IN (:currentIds)')
@@ -55,48 +82,59 @@ final readonly class DoctrineCartRepository implements CartRepositoryInterface
                 ->setParameter('currentIds', $currentItemIds)
                 ->execute();
         } else {
-            // If cart is empty, remove all items
             $this->entityManager
                 ->createQuery('DELETE FROM '.CartItem::class.' ci WHERE ci.cart = :cartId')
                 ->setParameter('cartId', $managedCart->id())
                 ->execute();
         }
+    }
 
-        // Persist new items and update existing ones with managed Cart reference
-        foreach ($cart->items() as $item) {
-            /** @var CartItem|null $existingItem */
-            $existingItem = $this->entityManager
-                ->createQuery('SELECT ci FROM '.CartItem::class.' ci WHERE ci.id = :itemId')
-                ->setParameter('itemId', $item->id())
-                ->getOneOrNullResult();
+    private function persistOrUpdateCartItems(Cart $domainCart, Cart $managedCart): void
+    {
+        foreach ($domainCart->items() as $item) {
+            $existingItem = $this->findExistingCartItem($item->id());
 
             if (null === $existingItem) {
-                // Create new item with managed cart reference
-                $newItem = CartItem::create(
-                    $item->id(),
-                    $managedCart,
-                    $item->productId(),
-                    $item->name(),
-                    $item->unitPrice(),
-                    $item->quantity()
-                );
-                $this->entityManager->persist($newItem);
+                $this->persistNewCartItem($item, $managedCart);
             } else {
-                // Update existing item to match current state
                 $existingItem->updateQuantity($item->quantity());
             }
         }
+    }
 
-        // Update cart fields if cart has changed (e.g., expiration)
-        if ($cart->expiresAt() !== $managedCart->expiresAt()) {
+    private function findExistingCartItem(CartItemId $itemId): ?CartItem
+    {
+        /** @var CartItem|null $existingItem */
+        $existingItem = $this->entityManager
+            ->createQuery('SELECT ci FROM '.CartItem::class.' ci WHERE ci.id = :itemId')
+            ->setParameter('itemId', $itemId)
+            ->getOneOrNullResult();
+
+        return $existingItem;
+    }
+
+    private function persistNewCartItem(CartItem $item, Cart $managedCart): void
+    {
+        $newItem = CartItem::create(
+            $item->id(),
+            $managedCart,
+            $item->productId(),
+            $item->name(),
+            $item->unitPrice(),
+            $item->quantity()
+        );
+        $this->entityManager->persist($newItem);
+    }
+
+    private function updateCartFields(Cart $domainCart, Cart $managedCart): void
+    {
+        if ($domainCart->expiresAt() !== $managedCart->expiresAt()) {
             $this->entityManager
                 ->createQuery('UPDATE '.Cart::class.' c SET c.expiresAt = :expiresAt WHERE c.id = :cartId')
-                ->setParameter('expiresAt', $cart->expiresAt())
-                ->setParameter('cartId', $cart->id())
+                ->setParameter('expiresAt', $domainCart->expiresAt())
+                ->setParameter('cartId', $domainCart->id())
                 ->execute();
         }
-
-        $this->entityManager->flush();
     }
 
     public function findById(CartId $cartId): ?Cart

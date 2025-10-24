@@ -6,6 +6,7 @@ namespace App\Infrastructure\Symfony\Controller;
 
 use App\Application\Checkout\Command\ProcessCheckoutCommand;
 use App\Application\Checkout\Command\ProcessCheckoutCommandHandler;
+use App\Domain\Cart\Exception\CartNotFoundException;
 use App\Domain\Checkout\Exception\EmptyCartException;
 use OpenApi\Attributes as OA;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -123,30 +124,17 @@ final class ProcessCheckoutController extends AbstractController
                 ],
                 Response::HTTP_BAD_REQUEST
             );
-        } catch (\RuntimeException $e) {
-            // Cart not found
-            if (str_contains($e->getMessage(), 'Cart not found')) {
-                return new JsonResponse(
-                    [
-                        'error' => [
-                            'code' => 'cart_not_found',
-                            'message' => 'Cart not found',
-                        ],
-                    ],
-                    Response::HTTP_NOT_FOUND
-                );
-            }
-
+        } catch (CartNotFoundException $e) {
             return new JsonResponse(
                 [
                     'error' => [
-                        'code' => 'invalid_request',
-                        'message' => $e->getMessage(),
+                        'code' => 'cart_not_found',
+                        'message' => 'Cart not found',
                     ],
                 ],
-                Response::HTTP_BAD_REQUEST
+                Response::HTTP_NOT_FOUND
             );
-        } catch (\InvalidArgumentException $e) {
+        } catch (\RuntimeException|\InvalidArgumentException $e) {
             return new JsonResponse(
                 [
                     'error' => [

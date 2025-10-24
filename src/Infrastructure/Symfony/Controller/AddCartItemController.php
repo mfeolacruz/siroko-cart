@@ -6,6 +6,7 @@ namespace App\Infrastructure\Symfony\Controller;
 
 use App\Application\Cart\Command\AddCartItemCommand;
 use App\Application\Cart\Command\AddCartItemCommandHandler;
+use App\Domain\Cart\Exception\CartNotFoundException;
 use App\Domain\Cart\Repository\CartRepositoryInterface;
 use App\Domain\Cart\ValueObject\CartId;
 use OpenApi\Attributes as OA;
@@ -284,19 +285,12 @@ final class AddCartItemController extends AbstractController
                 'currency' => $cart->total()->currency(),
                 'items' => $items,
             ], Response::HTTP_OK);
-        } catch (\RuntimeException $e) {
-            if (str_contains($e->getMessage(), 'Cart not found')) {
-                return new JsonResponse(
-                    ['error' => 'Cart not found'],
-                    Response::HTTP_NOT_FOUND
-                );
-            }
-
+        } catch (CartNotFoundException $e) {
             return new JsonResponse(
-                ['error' => $e->getMessage()],
-                Response::HTTP_BAD_REQUEST
+                ['error' => 'Cart not found'],
+                Response::HTTP_NOT_FOUND
             );
-        } catch (\InvalidArgumentException $e) {
+        } catch (\RuntimeException|\InvalidArgumentException $e) {
             return new JsonResponse(
                 ['error' => $e->getMessage()],
                 Response::HTTP_BAD_REQUEST

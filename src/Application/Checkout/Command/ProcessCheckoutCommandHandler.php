@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Application\Checkout\Command;
 
+use App\Domain\Cart\Exception\CartNotFoundException;
 use App\Domain\Cart\Repository\CartRepositoryInterface;
 use App\Domain\Cart\ValueObject\CartId;
 use App\Domain\Checkout\Aggregate\Order;
@@ -28,7 +29,7 @@ final readonly class ProcessCheckoutCommandHandler
 
         $cart = $this->cartRepository->findById($cartId);
         if (null === $cart) {
-            throw new \RuntimeException('Cart not found');
+            throw CartNotFoundException::withId($cartId);
         }
 
         if ($cart->isEmpty()) {

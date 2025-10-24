@@ -21,6 +21,9 @@ use App\Domain\Shared\ValueObject\UserId;
 
 class Cart extends AggregateRoot
 {
+    private const DEFAULT_EXPIRATION_DAYS = 7;
+    private const DEFAULT_CURRENCY = 'EUR';
+
     /** @var array<string, CartItem> */
     private array $items = [];
 
@@ -35,7 +38,7 @@ class Cart extends AggregateRoot
     public static function create(CartId $id, ?UserId $userId = null): self
     {
         $createdAt = new \DateTimeImmutable();
-        $expiresAt = $createdAt->modify('+7 days');
+        $expiresAt = $createdAt->modify('+'.self::DEFAULT_EXPIRATION_DAYS.' days');
 
         $cart = new self(
             $id,
@@ -116,10 +119,10 @@ class Cart extends AggregateRoot
     public function total(): Money
     {
         if ($this->isEmpty()) {
-            return Money::fromCents(0, 'EUR');
+            return Money::fromCents(0, self::DEFAULT_CURRENCY);
         }
 
-        $total = Money::fromCents(0, 'EUR');
+        $total = Money::fromCents(0, self::DEFAULT_CURRENCY);
 
         foreach ($this->items as $item) {
             $total = $total->add($item->subtotal());

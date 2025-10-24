@@ -7,6 +7,7 @@ namespace App\Tests\Unit\Application\Checkout\Command;
 use App\Application\Checkout\Command\ProcessCheckoutCommand;
 use App\Application\Checkout\Command\ProcessCheckoutCommandHandler;
 use App\Domain\Cart\Aggregate\Cart;
+use App\Domain\Cart\Exception\CartNotFoundException;
 use App\Domain\Cart\Repository\CartRepositoryInterface;
 use App\Domain\Cart\ValueObject\CartId;
 use App\Domain\Checkout\Aggregate\Order;
@@ -94,8 +95,7 @@ final class ProcessCheckoutCommandHandlerTest extends TestCase
             ->with($cartId)
             ->willReturn(null);
 
-        $this->expectException(\RuntimeException::class);
-        $this->expectExceptionMessage('Cart not found');
+        $this->expectException(CartNotFoundException::class);
 
         $this->handler->handle($command);
     }
