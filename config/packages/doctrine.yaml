@@ -11,6 +11,9 @@ doctrine:
             product_name: App\Infrastructure\Persistence\Doctrine\Type\ProductNameType
             money: App\Infrastructure\Persistence\Doctrine\Type\MoneyType
             quantity: App\Infrastructure\Persistence\Doctrine\Type\QuantityType
+            order_id: App\Infrastructure\Persistence\Doctrine\Type\OrderIdType
+            order_item_id: App\Infrastructure\Persistence\Doctrine\Type\OrderItemIdType
+            order_status: App\Infrastructure\Persistence\Doctrine\Type\OrderStatusType
     orm:
         auto_generate_proxy_classes: true
         enable_lazy_ghost_objects: true
@@ -22,15 +25,27 @@ doctrine:
             CartAggregate:
                 type: xml
                 is_bundle: false
-                dir: '%kernel.project_dir%/src/Infrastructure/Persistence/Doctrine/Mapping/Aggregate'
+                dir: '%kernel.project_dir%/src/Infrastructure/Persistence/Doctrine/Mapping/Cart/Aggregate'
                 prefix: 'App\Domain\Cart\Aggregate'
                 alias: CartAggregate
             CartEntity:
                 type: xml
                 is_bundle: false
-                dir: '%kernel.project_dir%/src/Infrastructure/Persistence/Doctrine/Mapping/Entity'
+                dir: '%kernel.project_dir%/src/Infrastructure/Persistence/Doctrine/Mapping/Cart/Entity'
                 prefix: 'App\Domain\Cart\Entity'
                 alias: CartEntity
+            CheckoutAggregate:
+                type: xml
+                is_bundle: false
+                dir: '%kernel.project_dir%/src/Infrastructure/Persistence/Doctrine/Mapping/Checkout/Aggregate'
+                prefix: 'App\Domain\Checkout\Aggregate'
+                alias: CheckoutAggregate
+            CheckoutEntity:
+                type: xml
+                is_bundle: false
+                dir: '%kernel.project_dir%/src/Infrastructure/Persistence/Doctrine/Mapping/Checkout/Entity'
+                prefix: 'App\Domain\Checkout\Entity'
+                alias: CheckoutEntity
         controller_resolver:
             auto_mapping: false
 
