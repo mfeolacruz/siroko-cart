@@ -87,6 +87,15 @@ final readonly class DoctrineCartRepository implements CartRepositoryInterface
             }
         }
 
+        // Update cart fields if cart has changed (e.g., expiration)
+        if ($cart->expiresAt() !== $managedCart->expiresAt()) {
+            $this->entityManager
+                ->createQuery('UPDATE '.Cart::class.' c SET c.expiresAt = :expiresAt WHERE c.id = :cartId')
+                ->setParameter('expiresAt', $cart->expiresAt())
+                ->setParameter('cartId', $cart->id())
+                ->execute();
+        }
+
         $this->entityManager->flush();
     }
 
