@@ -308,13 +308,22 @@ final class DoctrineCartRepositoryTest extends KernelTestCase
 
         $this->repository->save($cart);
 
-        // Find the cart and get the first item ID to remove
+        // Find the cart and get the product1 item ID to remove
         $foundCart = $this->repository->findById($cartId);
         $this->assertNotNull($foundCart);
 
         $items = $foundCart->items();
         $this->assertCount(2, $items);
-        $cartItemToRemoveId = $items[0]->id();
+
+        // Find the item with product1Id to remove it
+        $cartItemToRemoveId = null;
+        foreach ($items as $item) {
+            if ($item->productId()->equals($product1Id)) {
+                $cartItemToRemoveId = $item->id();
+                break;
+            }
+        }
+        $this->assertNotNull($cartItemToRemoveId, 'Could not find item with product1Id');
 
         // Remove the item using the domain method
         $foundCart->removeItem($cartItemToRemoveId);
