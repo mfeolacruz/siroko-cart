@@ -12,11 +12,13 @@ use App\Domain\Shared\ValueObject\ProductId;
 use App\Domain\Shared\ValueObject\ProductName;
 use App\Domain\Shared\ValueObject\Quantity;
 use App\Domain\Shared\ValueObject\UserId;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
 final class DoctrineCartRepositoryTest extends KernelTestCase
 {
     private CartRepositoryInterface $repository;
+    private EntityManagerInterface $entityManager;
 
     protected function setUp(): void
     {
@@ -25,6 +27,10 @@ final class DoctrineCartRepositoryTest extends KernelTestCase
         $repository = static::getContainer()->get(CartRepositoryInterface::class);
         assert($repository instanceof CartRepositoryInterface);
         $this->repository = $repository;
+
+        $entityManager = static::getContainer()->get(EntityManagerInterface::class);
+        assert($entityManager instanceof EntityManagerInterface);
+        $this->entityManager = $entityManager;
     }
 
     public function testItSavesAndFindsAnonymousCart(): void
@@ -448,5 +454,30 @@ final class DoctrineCartRepositoryTest extends KernelTestCase
         $this->assertCount(0, $retrievedCart->items());
         $this->assertEquals(0, $retrievedCart->total()->amountInCents());
         $this->assertEquals(0, $retrievedCart->totalItems());
+    }
+
+    public function testItReturnsNullForExpiredCart(): void
+    {
+        $cartId = CartId::generate();
+        $userId = UserId::generate();
+
+        // Create a cart with past expiration using reconstruct
+        $expiredDate = new \DateTimeImmutable('-1 day');
+        $cart = Cart::reconstruct(
+            $cartId,
+            $userId,
+            new \DateTimeImmutable('-8 days'),
+            $expiredDate,
+            []
+        );
+
+        // Save the expired cart directly to database bypassing domain rules
+        $this->entityManager->persist($cart);
+        $this->entityManager->flush();
+
+        // Try to retrieve the expired cart - should return null
+        $retrievedCart = $this->repository->findById($cartId);
+
+        $this->assertNull($retrievedCart);
     }
 }

@@ -103,6 +103,11 @@ final readonly class DoctrineCartRepository implements CartRepositoryInterface
             return null;
         }
 
+        // Check if cart is expired - if so, treat as non-existent
+        if ($cartData['expiresAt'] <= new \DateTimeImmutable()) {
+            return null;
+        }
+
         /** @var array<CartItem> $items */
         $items = $this->entityManager
             ->createQuery('SELECT ci FROM '.CartItem::class.' ci WHERE ci.cart = :cartId')

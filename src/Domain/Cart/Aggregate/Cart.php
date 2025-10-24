@@ -28,7 +28,7 @@ class Cart extends AggregateRoot
         private readonly CartId $id,
         private readonly ?UserId $userId,
         private readonly \DateTimeImmutable $createdAt,
-        private readonly \DateTimeImmutable $expiresAt,
+        private \DateTimeImmutable $expiresAt,
     ) {
     }
 
@@ -227,5 +227,15 @@ class Cart extends AggregateRoot
                 $itemToRemove->productId()
             )
         );
+    }
+
+    public function forceExpiration(): void
+    {
+        $this->expiresAt = new \DateTimeImmutable();
+    }
+
+    public function isExpired(): bool
+    {
+        return $this->expiresAt <= new \DateTimeImmutable();
     }
 }
