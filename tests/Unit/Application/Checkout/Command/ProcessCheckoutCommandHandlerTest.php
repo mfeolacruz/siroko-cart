@@ -10,6 +10,7 @@ use App\Domain\Cart\Aggregate\Cart;
 use App\Domain\Cart\Repository\CartRepositoryInterface;
 use App\Domain\Cart\ValueObject\CartId;
 use App\Domain\Checkout\Aggregate\Order;
+use App\Domain\Checkout\Exception\EmptyCartException;
 use App\Domain\Checkout\Repository\OrderRepositoryInterface;
 use App\Domain\Checkout\ValueObject\OrderId;
 use App\Domain\Shared\Event\EventDispatcherInterface;
@@ -113,7 +114,7 @@ final class ProcessCheckoutCommandHandlerTest extends TestCase
             ->with($cartId)
             ->willReturn($cart);
 
-        $this->expectException(\RuntimeException::class);
+        $this->expectException(EmptyCartException::class);
         $this->expectExceptionMessage('Cannot checkout empty cart');
 
         $this->handler->handle($command);
