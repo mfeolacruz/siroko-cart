@@ -7,8 +7,10 @@ namespace App\Application\Checkout\Command;
 use App\Domain\Cart\Repository\CartRepositoryInterface;
 use App\Domain\Cart\ValueObject\CartId;
 use App\Domain\Checkout\Aggregate\Order;
+use App\Domain\Checkout\Exception\EmptyCartException;
 use App\Domain\Checkout\Repository\OrderRepositoryInterface;
 use App\Domain\Checkout\ValueObject\OrderId;
+use App\Domain\Checkout\ValueObject\OrderItemId;
 use App\Domain\Shared\Event\EventDispatcherInterface;
 
 final readonly class ProcessCheckoutCommandHandler
@@ -30,15 +32,26 @@ final readonly class ProcessCheckoutCommandHandler
         }
 
         if ($cart->isEmpty()) {
-            throw new \RuntimeException('Cannot checkout empty cart');
+            throw new EmptyCartException('Cannot checkout empty cart');
         }
 
         // Create order from cart
         $orderId = OrderId::generate();
         $order = Order::create($orderId, $cart->userId());
 
-        // Capture cart total in order
-        $order->captureTotal($cart->total());
+        // Transfer cart items to order
+        foreach ($cart->items() as $cartItem) {
+            $order->addItem(
+                OrderItemId::generate(),
+                $cartItem->productId(),
+                $cartItem->name(),
+                $cartItem->unitPrice(),
+                $cartItem->quantity()
+            );
+        }
+
+        // Calculate and capture total from items
+        $order->captureTotal($order->calculateTotal());
 
         // Save order
         $this->orderRepository->save($order);
