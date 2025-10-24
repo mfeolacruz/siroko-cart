@@ -41,6 +41,27 @@ final readonly class DoctrineCartRepository implements CartRepositoryInterface
             }
         }
 
+        // Get current item IDs from the domain cart
+        $currentItemIds = array_map(
+            fn ($item) => $item->id(),
+            $cart->items()
+        );
+
+        // Remove items that are no longer in the cart
+        if (!empty($currentItemIds)) {
+            $this->entityManager
+                ->createQuery('DELETE FROM '.CartItem::class.' ci WHERE ci.cart = :cartId AND ci.id NOT IN (:currentIds)')
+                ->setParameter('cartId', $managedCart->id())
+                ->setParameter('currentIds', $currentItemIds)
+                ->execute();
+        } else {
+            // If cart is empty, remove all items
+            $this->entityManager
+                ->createQuery('DELETE FROM '.CartItem::class.' ci WHERE ci.cart = :cartId')
+                ->setParameter('cartId', $managedCart->id())
+                ->execute();
+        }
+
         // Persist new items and update existing ones with managed Cart reference
         foreach ($cart->items() as $item) {
             /** @var CartItem|null $existingItem */
