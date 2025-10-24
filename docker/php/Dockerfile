@@ -7,6 +7,7 @@ RUN apt-get update && apt-get install -y \
     libzip-dev \
     libicu-dev \
     libonig-dev \
+    apache2-utils \
     && docker-php-ext-install \
     pdo_mysql \
     zip \
