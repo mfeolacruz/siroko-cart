@@ -13,11 +13,11 @@ use App\Domain\Cart\Event\CartItemRemoved;
 use App\Domain\Cart\Exception\CartItemNotFoundException;
 use App\Domain\Cart\ValueObject\CartId;
 use App\Domain\Cart\ValueObject\CartItemId;
-use App\Domain\Cart\ValueObject\Money;
-use App\Domain\Cart\ValueObject\ProductId;
-use App\Domain\Cart\ValueObject\ProductName;
-use App\Domain\Cart\ValueObject\Quantity;
-use App\Domain\Cart\ValueObject\UserId;
+use App\Domain\Shared\ValueObject\Money;
+use App\Domain\Shared\ValueObject\ProductId;
+use App\Domain\Shared\ValueObject\ProductName;
+use App\Domain\Shared\ValueObject\Quantity;
+use App\Domain\Shared\ValueObject\UserId;
 use PHPUnit\Framework\TestCase;
 
 final class CartTest extends TestCase

@@ -8,8 +8,8 @@ use App\Domain\Cart\Exception\CartNotFoundException;
 use App\Domain\Cart\Repository\CartRepositoryInterface;
 use App\Domain\Cart\ValueObject\CartId;
 use App\Domain\Cart\ValueObject\CartItemId;
-use App\Domain\Cart\ValueObject\Quantity;
 use App\Domain\Shared\Event\EventDispatcherInterface;
+use App\Domain\Shared\ValueObject\Quantity;
 
 final readonly class UpdateCartItemQuantityCommandHandler
 {

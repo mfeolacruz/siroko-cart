@@ -6,8 +6,8 @@ namespace App\Domain\Cart\Event;
 
 use App\Domain\Cart\ValueObject\CartId;
 use App\Domain\Cart\ValueObject\CartItemId;
-use App\Domain\Cart\ValueObject\ProductId;
 use App\Domain\Shared\Event\DomainEvent;
+use App\Domain\Shared\ValueObject\ProductId;
 
 final readonly class CartItemRemoved extends DomainEvent
 {

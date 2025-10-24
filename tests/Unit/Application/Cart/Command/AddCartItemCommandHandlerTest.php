@@ -9,8 +9,8 @@ use App\Application\Cart\Command\AddCartItemCommandHandler;
 use App\Domain\Cart\Aggregate\Cart;
 use App\Domain\Cart\Repository\CartRepositoryInterface;
 use App\Domain\Cart\ValueObject\CartId;
-use App\Domain\Cart\ValueObject\UserId;
 use App\Domain\Shared\Event\EventDispatcherInterface;
+use App\Domain\Shared\ValueObject\UserId;
 use PHPUnit\Framework\TestCase;
 
 final class AddCartItemCommandHandlerTest extends TestCase

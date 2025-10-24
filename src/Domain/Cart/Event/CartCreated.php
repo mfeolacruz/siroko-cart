@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Domain\Cart\Event;
 
 use App\Domain\Cart\ValueObject\CartId;
-use App\Domain\Cart\ValueObject\UserId;
 use App\Domain\Shared\Event\DomainEvent;
+use App\Domain\Shared\ValueObject\UserId;
 
 final readonly class CartCreated extends DomainEvent
 {

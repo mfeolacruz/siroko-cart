@@ -7,11 +7,11 @@ namespace App\Tests\Integration\Infrastructure\Persistence\Doctrine\Repository;
 use App\Domain\Cart\Aggregate\Cart;
 use App\Domain\Cart\Repository\CartRepositoryInterface;
 use App\Domain\Cart\ValueObject\CartId;
-use App\Domain\Cart\ValueObject\Money;
-use App\Domain\Cart\ValueObject\ProductId;
-use App\Domain\Cart\ValueObject\ProductName;
-use App\Domain\Cart\ValueObject\Quantity;
-use App\Domain\Cart\ValueObject\UserId;
+use App\Domain\Shared\ValueObject\Money;
+use App\Domain\Shared\ValueObject\ProductId;
+use App\Domain\Shared\ValueObject\ProductName;
+use App\Domain\Shared\ValueObject\Quantity;
+use App\Domain\Shared\ValueObject\UserId;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
 final class DoctrineCartRepositoryTest extends KernelTestCase

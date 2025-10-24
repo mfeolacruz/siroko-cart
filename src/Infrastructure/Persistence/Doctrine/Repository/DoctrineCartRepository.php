@@ -93,7 +93,7 @@ final readonly class DoctrineCartRepository implements CartRepositoryInterface
     public function findById(CartId $cartId): ?Cart
     {
         // Query scalar data to avoid Identity Map collision - returns array, not managed entity
-        /** @var array{id: CartId, userId: \App\Domain\Cart\ValueObject\UserId|null, createdAt: \DateTimeImmutable, expiresAt: \DateTimeImmutable}|null $cartData */
+        /** @var array{id: CartId, userId: \App\Domain\Shared\ValueObject\UserId|null, createdAt: \DateTimeImmutable, expiresAt: \DateTimeImmutable}|null $cartData */
         $cartData = $this->entityManager
             ->createQuery('SELECT c.id, c.userId, c.createdAt, c.expiresAt FROM '.Cart::class.' c WHERE c.id = :cartId')
             ->setParameter('cartId', $cartId)

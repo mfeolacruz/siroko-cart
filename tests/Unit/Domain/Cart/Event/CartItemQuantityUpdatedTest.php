@@ -7,7 +7,7 @@ namespace App\Tests\Unit\Domain\Cart\Event;
 use App\Domain\Cart\Event\CartItemQuantityUpdated;
 use App\Domain\Cart\ValueObject\CartId;
 use App\Domain\Cart\ValueObject\CartItemId;
-use App\Domain\Cart\ValueObject\Quantity;
+use App\Domain\Shared\ValueObject\Quantity;
 use PHPUnit\Framework\TestCase;
 
 final class CartItemQuantityUpdatedTest extends TestCase

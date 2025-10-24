@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Functional\Infrastructure\Symfony\Controller;
 
-use App\Domain\Cart\ValueObject\UserId;
+use App\Domain\Shared\ValueObject\UserId;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\HttpFoundation\Response;
 

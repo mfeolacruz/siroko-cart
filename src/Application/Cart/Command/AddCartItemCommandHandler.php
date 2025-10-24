@@ -6,11 +6,11 @@ namespace App\Application\Cart\Command;
 
 use App\Domain\Cart\Repository\CartRepositoryInterface;
 use App\Domain\Cart\ValueObject\CartId;
-use App\Domain\Cart\ValueObject\Money;
-use App\Domain\Cart\ValueObject\ProductId;
-use App\Domain\Cart\ValueObject\ProductName;
-use App\Domain\Cart\ValueObject\Quantity;
 use App\Domain\Shared\Event\EventDispatcherInterface;
+use App\Domain\Shared\ValueObject\Money;
+use App\Domain\Shared\ValueObject\ProductId;
+use App\Domain\Shared\ValueObject\ProductName;
+use App\Domain\Shared\ValueObject\Quantity;
 
 final readonly class AddCartItemCommandHandler
 {

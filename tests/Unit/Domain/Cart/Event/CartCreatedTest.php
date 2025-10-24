@@ -6,7 +6,7 @@ namespace App\Tests\Unit\Domain\Cart\Event;
 
 use App\Domain\Cart\Event\CartCreated;
 use App\Domain\Cart\ValueObject\CartId;
-use App\Domain\Cart\ValueObject\UserId;
+use App\Domain\Shared\ValueObject\UserId;
 use PHPUnit\Framework\TestCase;
 
 final class CartCreatedTest extends TestCase

@@ -7,7 +7,7 @@ namespace App\Tests\Unit\Domain\Cart\Event;
 use App\Domain\Cart\Event\CartItemRemoved;
 use App\Domain\Cart\ValueObject\CartId;
 use App\Domain\Cart\ValueObject\CartItemId;
-use App\Domain\Cart\ValueObject\ProductId;
+use App\Domain\Shared\ValueObject\ProductId;
 use PHPUnit\Framework\TestCase;
 
 final class CartItemRemovedTest extends TestCase
